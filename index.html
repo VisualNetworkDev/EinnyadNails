@@ -8,20 +8,20 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="EinnyadNails">
-  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v3">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v3">
+  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v7">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v7">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v3">
-  <script src="assets/config.js?v=einnyadnails-v3"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
-  <script src="assets/app-intro.js?v=einnyadnails-v3"></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v7">
+  <script src="assets/config.js?v=einnyadnails-v7"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v7" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v7"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
     <div class="intro-card">
       <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Reservas a domicilio</small></span></div>
-      <div class="intro-main"><div class="intro-plate"></div><h2>Cargando tu experiencia</h2><p>Preparando servicios, promociones, reseñas y ajustes de reserva.</p></div>
-      <div class="intro-status"><span id="appIntroStep">Conectando con el salón...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
+      <div class="intro-main"><div class="intro-plate"></div><h2>Preparando tu reserva</h2><p>Cargando servicios, disponibilidad, promociones y detalles para tu cita a domicilio.</p></div>
+      <div class="intro-status"><span id="appIntroStep">Sincronizando disponibilidad...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
     </div>
   </div>
 
@@ -114,7 +114,7 @@
         <div>
           <span class="badge green" data-i18n="leaveReview">Deja tu reseña</span>
           <h3 data-i18n="reviewPromptTitle">Cuenta tu experiencia</h3>
-          <p class="section-sub" data-i18n="reviewPromptText">Tu comentario puede aparecer en la página cuando sea revisado.</p>
+          <p class="section-sub" data-i18n="reviewPromptText">Gracias por compartir tu experiencia con EinnyadNails.</p>
         </div>
         <div class="split">
           <label class="field"><span data-i18n="name">Nombre</span><input id="reviewName" maxlength="80"></label>
@@ -250,10 +250,10 @@
     var copy = {
       es: {
         subtitle:'Uñas a domicilio', navServices:'Servicios', navOffers:'Promos', navAbout:'Sobre mí', navReviews:'Reseñas', navContact:'Contacto', install:'Instalar', cart:'Reserva',
-        heroPill:'Servicio de uñas a domicilio', heroTitle:'Uñas elegantes sin salir de casa.', heroText:'Reserva manicure, gel, acrílicas, pedicure o nail art. Recibes un QR para verificar la cita cuando la técnica llegue.',
+        heroPill:'Servicio de uñas a domicilio', heroTitle:'Uñas elegantes sin salir de casa.', heroText:'Reserva manicure, gel, acrílicas, pedicure o nail art. Recibes un QR para verificar la cita cuando la técnica llegue.', selected:'En reserva',
         reserveNow:'Reservar cita', seePromos:'Ver promociones', servicesTitle:'Servicios', servicesText:'Selecciona los servicios que quieres reservar. Puedes agregar más de uno antes de confirmar.',
         offersTitle:'Promociones', offersText:'Ofertas activas configuradas por EinnyadNails.', aboutBadge:'Sobre EinnyadNails', aboutTitle:'Belleza de uñas con detalle.',
-        reviewsTitle:'Reseñas', reviewsText:'Comentarios de clientas aprobados por el negocio.', leaveReview:'Deja tu reseña', reviewPromptTitle:'Cuenta tu experiencia', reviewPromptText:'Tu comentario puede aparecer en la página cuando sea revisado.',
+        reviewsTitle:'Reseñas', reviewsText:'Experiencias reales compartidas por clientas.', leaveReview:'Deja tu reseña', reviewPromptTitle:'Cuenta tu experiencia', reviewPromptText:'Gracias por compartir tu experiencia con EinnyadNails.',
         name:'Nombre', rating:'Calificación', review:'Reseña', sendReview:'Enviar reseña', contactBadge:'Contacto', contactTitle:'Reserva o consulta disponibilidad.', contactText:'Servicio a domicilio en el área configurada por la dueña. Llama o escribe para preguntas antes de reservar.',
         phone:'Teléfono', call:'Llamar', serviceArea:'Área de servicio', open:'Abrir', drawerTitle:'Tu cita', drawerSub:'Revisa servicios y confirma datos', close:'Cerrar', appointmentInfo:'Información de la cita',
         preferredDate:'Fecha deseada', preferredTime:'Hora deseada', address:'Dirección del servicio', coupon:'Cupón', payment:'Pago', tip:'Propina', notes:'Notas', placeAppointment:'Reservar cita',
@@ -265,10 +265,10 @@
       },
       fr: {
         subtitle:'Ongles à domicile', navServices:'Services', navOffers:'Promos', navAbout:'À propos', navReviews:'Avis', navContact:'Contact', install:'Installer', cart:'Rendez-vous',
-        heroPill:'Service d’ongles à domicile', heroTitle:'Des ongles élégants sans sortir.', heroText:'Réservez manucure, gel, acrylique, pédicure ou nail art. Vous recevez un QR pour vérifier le rendez-vous à l’arrivée.',
+        heroPill:'Service d’ongles à domicile', heroTitle:'Des ongles élégants sans sortir.', heroText:'Réservez manucure, gel, acrylique, pédicure ou nail art. Vous recevez un QR pour vérifier le rendez-vous à l’arrivée.', selected:'Ajouté',
         reserveNow:'Réserver', seePromos:'Voir promos', servicesTitle:'Services', servicesText:'Sélectionnez les services à réserver. Vous pouvez en ajouter plusieurs avant de confirmer.',
         offersTitle:'Promotions', offersText:'Promotions actives configurées par EinnyadNails.', aboutBadge:'À propos', aboutTitle:'Beauté des ongles avec détail.',
-        reviewsTitle:'Avis', reviewsText:'Avis de clientes approuvés par l’entreprise.', leaveReview:'Laisser un avis', reviewPromptTitle:'Partagez votre expérience', reviewPromptText:'Votre commentaire peut apparaître après révision.',
+        reviewsTitle:'Avis', reviewsText:'Expériences réelles partagées par des clientes.', leaveReview:'Laisser un avis', reviewPromptTitle:'Partagez votre expérience', reviewPromptText:'Merci de partager votre expérience avec EinnyadNails.',
         name:'Nom', rating:'Note', review:'Avis', sendReview:'Envoyer avis', contactBadge:'Contact', contactTitle:'Réserver ou demander disponibilité.', contactText:'Service à domicile dans la zone configurée. Appelez ou écrivez pour toute question.',
         phone:'Téléphone', call:'Appeler', serviceArea:'Zone de service', open:'Ouvrir', drawerTitle:'Votre rendez-vous', drawerSub:'Révisez les services et confirmez', close:'Fermer', appointmentInfo:'Informations du rendez-vous',
         preferredDate:'Date souhaitée', preferredTime:'Heure souhaitée', address:'Adresse du service', coupon:'Code promo', payment:'Paiement', tip:'Pourboire', notes:'Notes', placeAppointment:'Réserver',
@@ -393,7 +393,9 @@
       var list = (cat === 'All' || cat === allLabel) ? services : services.filter(function(item){ return item.category === cat; });
       $('servicesGrid').innerHTML = list.map(function(item){
         var image = item.image || 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80';
-        return '<article class="card service-card"><div class="service-img" style="background-image:url(' + RTApi.esc(image) + ')"></div><div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + t('add') + '</button></div></div></article>';
+        var selectedQty = cart[item.id] || 0;
+        var actionLabel = selectedQty ? (t('add') + ' +' + selectedQty) : t('add');
+        return '<article class="card service-card ' + (selectedQty ? 'selected' : '') + '"><div class="service-img" style="background-image:url(' + RTApi.esc(image) + ')"></div>' + (selectedQty ? '<span class="selected-badge">' + RTApi.esc(t('selected')) + '</span>' : '') + '<div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + RTApi.esc(actionLabel) + '</button></div></div></article>';
       }).join('') || '<div class="empty">' + t('emptyServices') + '</div>';
     }
     function renderBeforeAfter(){
@@ -451,6 +453,7 @@
     function addService(id){
       cart[id] = (cart[id] || 0) + 1;
       renderCart();
+      renderServices();
       loadAvailableTimes();
       $('cartFab').classList.add('has-items');
       toast(t('added'));
@@ -459,6 +462,7 @@
       cart[id] = (cart[id] || 0) + delta;
       if(cart[id] <= 0) delete cart[id];
       renderCart();
+      renderServices();
     }
     function payload(){ return Object.keys(cart).map(function(id){ return { id:id, qty:cart[id] }; }); }
     function calc(){
