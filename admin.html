@@ -240,6 +240,16 @@
             <div id="promosList" class="grid"></div>
           </div>
           <div class="card settings-wide">
+            <div class="section-head compact">
+              <div>
+                <h2>Limpieza para produccion</h2>
+                <p class="section-sub">Borra datos viejos de prueba sin tocar configuracion, pagos, horarios, servicios, fotos usadas ni duena.</p>
+              </div>
+              <button class="btn danger" type="button" onclick="cleanProductionData()">Limpiar hojas</button>
+            </div>
+            <div id="cleanProductionStatus" class="section-sub">Usalo antes de entregar o vender el proyecto.</div>
+          </div>
+          <div class="card settings-wide">
             <div class="section-head compact"><div><h2>Logs</h2><p class="section-sub">Eventos tecnicos del sistema.</p></div><button class="btn danger" type="button" onclick="clearLogs()">Borrar logs</button></div>
             <div id="logsList" class="table-wrap"></div>
           </div>
@@ -1011,6 +1021,22 @@
       if(!ok) return;
       try { await adminCall('clearLogs', {}); await refreshAll(); }
       catch(error){ toast(error.message || String(error)); }
+    }
+
+    async function cleanProductionData(){
+      var message = 'Esto borrara citas, extras, sesiones, logs, historial QR, bloqueos, resenas/testimonios y promociones demo. Se mantienen configuracion, pagos, horarios, servicios, fotos y duena.';
+      var ok = await confirmAction('Limpiar hojas para produccion', message);
+      if(!ok) return;
+      $('cleanProductionStatus').innerHTML = '<span class="loading-inline"></span>Limpiando hojas...';
+      try {
+        var result = await adminCall('cleanProductionData', { confirm:'CLEAN' });
+        var cleared = (result.cleared || []).map(function(item){ return item.sheet + ': ' + item.rows + ' filas'; }).join(' | ');
+        $('cleanProductionStatus').textContent = (result.message || 'Limpieza completada.') + (cleared ? ' ' + cleared : '');
+        await refreshAll();
+        toast('Hojas limpias');
+      } catch(error) {
+        $('cleanProductionStatus').textContent = error.message || String(error);
+      }
     }
 
     async function verifyQr(){
