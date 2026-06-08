@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EinnyadNails Admin</title>
+  <meta name="theme-color" content="#2d131e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Nails Admin">
+  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v3">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v3">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v3">
+  <script src="assets/jsQR.js?v=einnyadnails-v3"></script>
+  <script src="assets/config.js?v=einnyadnails-v3"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v3"></script>
+</head>
+<body>
+  <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="18000" role="status" aria-live="polite">
+    <div class="intro-card">
+      <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Panel de dueña</small></span></div>
+      <div class="intro-main"><div class="intro-plate"></div><h2>Abriendo admin</h2><p>Preparando citas, servicios, QR, pagos y reseñas.</p></div>
+      <div class="intro-status"><span id="appIntroStep">Verificando sesión...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+
+  <section id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <div class="intro-brand" style="justify-content:flex-start;color:var(--ink);">
+        <span class="intro-mark">EN</span>
+        <span><strong>EinnyadNails</strong><small style="color:var(--muted);">Acceso privado de la dueña</small></span>
+      </div>
+      <label class="field"><span>Email</span><input id="loginEmail" type="email" placeholder="einnyadnail@gmail.com" autocomplete="username"></label>
+      <label class="field"><span>Password</span><input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"></label>
+      <button id="loginBtn" class="btn full" type="button" onclick="login()">Entrar</button>
+      <div id="loginMessage" class="section-sub"></div>
+    </div>
+  </section>
+
+  <div id="adminApp" class="admin-shell hidden">
+    <header class="topbar">
+      <div class="container nav">
+        <a class="brand" href="admin.html"><span class="brand-mark">EN</span><span><strong>EinnyadNails</strong><small id="sessionLabel">Sesión activa</small></span></a>
+        <nav class="navlinks">
+          <button type="button" data-install-app onclick="RTPWA.install()" style="display:none;">Instalar</button>
+          <button type="button" onclick="refreshAll()">Actualizar</button>
+          <button type="button" onclick="logout()">Salir</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="admin-top">
+        <span class="badge green">Panel privado</span>
+        <h1 class="section-title">EinnyadNails Admin</h1>
+        <p class="section-sub">Gestiona citas a domicilio, servicios, reseñas, pagos y QR de llegada.</p>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="active" data-panel="dashboard" onclick="showPanel('dashboard', this)">Dashboard</button>
+        <button data-panel="appointments" onclick="showPanel('appointments', this)">Citas</button>
+        <button data-panel="availability" onclick="showPanel('availability', this)">Horarios</button>
+        <button data-panel="qr" onclick="showPanel('qr', this)">QR cita</button>
+        <button data-panel="services" onclick="showPanel('services', this)">Servicios</button>
+        <button data-panel="promos" onclick="showPanel('promos', this)">Promos</button>
+        <button data-panel="reviews" onclick="showPanel('reviews', this)">Reseñas</button>
+        <button data-panel="settings" onclick="showPanel('settings', this)">Ajustes</button>
+        <button data-panel="logs" onclick="showPanel('logs', this)">Logs</button>
+      </div>
+
+      <section id="panel-dashboard" class="panel active section">
+        <div id="dashboardCards" class="admin-grid"></div>
+        <div class="card" style="margin-top:18px;">
+          <h2>Próxima cita</h2>
+          <div id="nextAppointment" class="section-sub">Sin cita activa.</div>
+        </div>
+      </section>
+
+      <section id="panel-appointments" class="panel section">
+        <div class="section-head">
+          <div><h2 class="section-title">Citas</h2><p class="section-sub">Todas las reservas llegan aquí y también al correo configurado.</p></div>
+          <button class="btn" type="button" onclick="refreshAll()">Actualizar</button>
+        </div>
+        <div id="appointmentsTable" class="table-wrap"></div>
+      </section>
+
+      <section id="panel-availability" class="panel section">
+        <div class="section-head">
+          <div><h2 class="section-title">Horarios y bloqueos</h2><p class="section-sub">Controla cuándo se pueden crear citas. El cliente solo verá horas disponibles.</p></div>
+          <button class="btn" type="button" onclick="saveHours()">Guardar horarios</button>
+        </div>
+        <div class="grid grid-2">
+          <div class="card">
+            <h2>Horas disponibles</h2>
+            <div id="hoursEditor" class="hours-editor"></div>
+          </div>
+          <form class="card" onsubmit="saveBlock(event)">
+            <h2>Bloquear día u hora</h2>
+            <label class="field"><span>Fecha</span><input id="blockDate" type="date" required></label>
+            <div class="split"><label class="field"><span>Desde</span><input id="blockStart" type="time" required></label><label class="field"><span>Hasta</span><input id="blockEnd" type="time" required></label></div>
+            <label class="field"><span>Motivo</span><input id="blockReason" placeholder="Cita personal, descanso, evento..."></label>
+            <button class="btn full" type="submit">Guardar bloqueo</button>
+          </form>
+        </div>
+        <div class="card" style="margin-top:18px;">
+          <h2>Bloqueos activos</h2>
+          <div id="blocksList" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="panel-qr" class="panel section">
+        <div class="section-head">
+          <div><h2 class="section-title">QR de cita</h2><p class="section-sub">Escanea el QR al llegar a la cita. Desde aquí puedes marcar llegada, iniciar servicio, agregar/remover extras y finalizar con recibo actualizado.</p></div>
+        </div>
+        <div class="qr-layout">
+          <div class="card">
+            <video id="qrVideo" class="qr-video" playsinline muted></video>
+            <canvas id="qrCanvas" hidden></canvas>
+            <p id="qrCameraStatus" class="qr-status">La cámara se abre dentro de esta página. Si el navegador la bloquea, usa HTTPS o sube una foto del QR.</p>
+            <div class="toolbar">
+              <button class="btn" type="button" onclick="startQrCamera()">Abrir cámara</button>
+              <button class="btn secondary" type="button" onclick="stopQrCamera()">Cerrar cámara</button>
+            </div>
+            <label class="field" style="margin-top:14px;"><span>Foto del QR</span><input id="qrImageInput" type="file" accept="image/*" capture="environment" onchange="scanQrImage(this.files && this.files[0])"></label>
+            <label class="field"><span>Token o contenido QR</span><input id="qrText" placeholder="ENAIL|EN-20260607-ABCDE|QR-..."></label>
+            <button id="verifyQrBtn" class="btn full" type="button" onclick="verifyQr()">Verificar cita</button>
+          </div>
+          <div id="qrResult" class="card">
+            <div class="empty">Escanea o pega un QR para abrir la cita.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-services" class="panel section">
+        <div class="grid grid-2">
+          <form id="serviceForm" class="card" onsubmit="saveService(event)">
+            <h2>Servicio</h2>
+            <input id="serviceRow" type="hidden">
+            <input id="serviceId" type="hidden">
+            <div class="split"><label class="field"><span>Categoria</span><input id="serviceCategory" required></label><label class="field"><span>Orden</span><input id="serviceOrder" type="number" min="1" step="1" value="1"></label></div>
+            <label class="field"><span>Nombre ES</span><input id="serviceName" required></label>
+            <label class="field"><span>Nombre FR-CA</span><input id="serviceNameFr"></label>
+            <label class="field"><span>Descripción ES</span><textarea id="serviceDescription"></textarea></label>
+            <label class="field"><span>Descripción FR-CA</span><textarea id="serviceDescriptionFr"></textarea></label>
+            <div class="split"><label class="field"><span>Precio CAD</span><input id="servicePrice" type="number" min="0" step="0.01" required></label><label class="field"><span>Duracion min</span><input id="serviceDuration" type="number" min="15" step="5" value="60"></label></div>
+            <input id="serviceImage" type="hidden">
+            <input id="serviceBeforeImage" type="hidden">
+            <input id="serviceAfterImage" type="hidden">
+            <div class="photo-upload-grid">
+              <label class="field"><span>Foto principal</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceImagePreview')"><img id="serviceImagePreview" class="preview-thumb" alt=""></label>
+              <label class="field"><span>Foto antes</span><input id="serviceBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceBeforePreview')"><img id="serviceBeforePreview" class="preview-thumb" alt=""></label>
+              <label class="field"><span>Foto después</span><input id="serviceAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceAfterPreview')"><img id="serviceAfterPreview" class="preview-thumb" alt=""></label>
+            </div>
+            <div id="serviceUploadStatus" class="section-sub"></div>
+            <label class="field"><span>Activo</span><select id="serviceAvailable"><option>Yes</option><option>No</option></select></label>
+            <div class="toolbar"><button class="btn" type="submit">Guardar servicio</button><button class="btn secondary" type="button" onclick="resetServiceForm()">Limpiar</button></div>
+          </form>
+          <div class="card">
+            <h2>Servicios activos</h2>
+            <div id="servicesList" class="grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-promos" class="panel section">
+        <div class="grid grid-2">
+          <form class="card" onsubmit="savePromo(event)">
+            <h2>Promocion</h2>
+            <label class="field"><span>Codigo</span><input id="promoCode" required></label>
+            <label class="field"><span>Titulo ES</span><input id="promoTitle"></label>
+            <label class="field"><span>Titulo FR-CA</span><input id="promoTitleFr"></label>
+            <label class="field"><span>Descripción ES</span><textarea id="promoDescription"></textarea></label>
+            <label class="field"><span>Descripción FR-CA</span><textarea id="promoDescriptionFr"></textarea></label>
+            <div class="split"><label class="field"><span>Tipo</span><select id="promoType"><option>percent</option><option>fixed</option></select></label><label class="field"><span>Valor</span><input id="promoValue" type="number" step="0.01"></label></div>
+            <div class="split"><label class="field"><span>Min subtotal</span><input id="promoMinSubtotal" type="number" step="0.01"></label><label class="field"><span>Activo</span><select id="promoActive"><option>Yes</option><option>No</option></select></label></div>
+            <button class="btn full" type="submit">Guardar promo</button>
+          </form>
+          <div id="promosList" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="panel-reviews" class="panel section">
+        <div class="section-head"><div><h2 class="section-title">Reseñas</h2><p class="section-sub">Las reseñas llegan desde el index. Aquí solo se aprueban, ocultan o dejan pendientes.</p></div></div>
+        <div id="reviewsList" class="grid grid-2"></div>
+      </section>
+
+      <section id="panel-settings" class="panel section">
+        <div class="grid grid-2">
+          <form class="card" onsubmit="saveSettings(event)">
+            <h2>Ajustes del negocio</h2>
+            <label class="field"><span>Nombre</span><input id="cfgName"></label>
+            <label class="field"><span>Duena</span><input id="cfgOwnerName"></label>
+            <div class="split"><label class="field"><span>Teléfono</span><input id="cfgPhone"></label><label class="field"><span>Email recibos</span><input id="cfgEmail" type="email"></label></div>
+            <label class="field"><span>Area de servicio</span><input id="cfgServiceArea"></label>
+            <label class="field"><span>Descripción</span><textarea id="cfgAboutText"></textarea></label>
+            <label class="field"><span>Cargo domicilio opcional</span><input id="cfgTravelFee" type="number" step="0.01"></label>
+            <label class="field"><span>Instagram URL</span><input id="cfgInstagram"></label>
+            <label class="field"><span>QR activo</span><select id="cfgQrEnabled"><option>Yes</option><option>No</option></select></label>
+            <button class="btn full" type="submit">Guardar ajustes</button>
+          </form>
+          <form class="card" onsubmit="savePayments(event)">
+            <h2>Pagos</h2>
+            <label class="field"><span>Pagos online activos</span><select id="payEnabled"><option>No</option><option>Yes</option></select></label>
+            <label class="field"><span>Proveedor</span><input id="payProvider" placeholder="Stripe, PayPal, Square, otro"></label>
+            <label class="field"><span>Payment link</span><input id="payLink"></label>
+            <label class="field"><span>Boton</span><input id="payButtonLabel"></label>
+            <label class="field"><span>Mensaje ES</span><textarea id="payRedirectMessageEs"></textarea></label>
+            <label class="field"><span>Mensaje FR-CA</span><textarea id="payRedirectMessageFr"></textarea></label>
+            <label class="field"><span>Cash activo</span><select id="payCashEnabled"><option>Yes</option><option>No</option></select></label>
+            <button class="btn full" type="submit">Guardar pagos</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="panel-logs" class="panel section">
+        <div class="section-head"><div><h2 class="section-title">Logs</h2><p class="section-sub">Eventos técnicos del sistema.</p></div><button class="btn danger" type="button" onclick="clearLogs()">Borrar logs</button></div>
+        <div id="logsList" class="table-wrap"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="confirmModal" class="modal">
+    <div class="modal-card compact-modal">
+      <h2 id="confirmTitle">Confirmar</h2>
+      <p id="confirmMessage" class="section-sub"></p>
+      <div class="toolbar" style="justify-content:flex-end;">
+        <button class="btn secondary" type="button" onclick="resolveConfirm(false)">Cancelar</button>
+        <button id="confirmYes" class="btn danger" type="button" onclick="resolveConfirm(true)">Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    var sessionToken = localStorage.getItem('en_admin_session') || '';
+    var adminData = {};
+    var currentUser = null;
+    var qrStream = null;
+    var qrFrame = null;
+    var qrDetector = null;
+    var currentQrAppointment = null;
+    var confirmResolver = null;
+
+    function $(id){ return document.getElementById(id); }
+    function toast(message){ var box = $('toast'); box.textContent = message; box.classList.add('show'); setTimeout(function(){ box.classList.remove('show'); }, 2600); }
+    function adminCall(action, payload){
+      payload = payload || {};
+      payload.sessionToken = sessionToken;
+      payload.userAgent = navigator.userAgent;
+      return RTApi.admin(action, payload);
+    }
+    function showLoading(text){ if(window.RTIntro){ RTIntro.setStep(text || 'Cargando...'); document.getElementById('appIntro').classList.remove('closing'); document.getElementById('appIntro').style.display = 'grid'; } }
+    function hideLoading(){ if(window.RTIntro) RTIntro.hide(160); }
+
+    async function login(){
+      $('loginBtn').disabled = true;
+      $('loginMessage').textContent = 'Verificando...';
+      try {
+        var result = await RTApi.admin('login', { email:$('loginEmail').value, password:$('loginPassword').value, userAgent:navigator.userAgent });
+        sessionToken = result.sessionToken;
+        localStorage.setItem('en_admin_session', sessionToken);
+        currentUser = result;
+        $('loginPassword').value = '';
+        await bootstrap();
+      } catch(error) {
+        $('loginMessage').textContent = error.message || String(error);
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    }
+    async function logout(){
+      try { if(sessionToken) await adminCall('logout', {}); } catch(error) {}
+      localStorage.removeItem('en_admin_session');
+      sessionToken = '';
+      location.reload();
+    }
+    async function bootstrap(){
+      showLoading('Cargando panel...');
+      try {
+        adminData = await adminCall('getAdminData', {});
+        currentUser = adminData.currentUser || currentUser;
+        $('sessionLabel').textContent = (currentUser && currentUser.email) || 'Sesión activa';
+        $('loginScreen').classList.add('hidden');
+        $('adminApp').classList.remove('hidden');
+        renderAll();
+      } catch(error) {
+        localStorage.removeItem('en_admin_session');
+        sessionToken = '';
+        $('loginScreen').classList.remove('hidden');
+        $('adminApp').classList.add('hidden');
+        $('loginMessage').textContent = error.message || String(error);
+      } finally {
+        hideLoading();
+      }
+    }
+    async function refreshAll(){
+      showLoading('Actualizando datos...');
+      try {
+        adminData = await adminCall('getAdminData', {});
+        renderAll();
+        toast('Actualizado');
+      } catch(error) { toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    function renderAll(){
+      renderDashboard();
+      renderAppointments();
+      renderServices();
+      renderPromos();
+      renderReviews();
+      renderAvailability();
+      fillSettings();
+      fillPayments();
+      renderLogs();
+    }
+    function showPanel(name, button){
+      document.querySelectorAll('.panel').forEach(function(panel){ panel.classList.remove('active'); });
+      $('panel-' + name).classList.add('active');
+      document.querySelectorAll('.admin-tabs button').forEach(function(btn){ btn.classList.remove('active'); });
+      var active = button || document.querySelector('.admin-tabs button[data-panel="' + name + '"]');
+      if(active) active.classList.add('active');
+      if(name !== 'qr') stopQrCamera();
+    }
+    function renderDashboard(){
+      var d = adminData.dashboard || {};
+      $('dashboardCards').innerHTML = [
+        ['Citas activas', d.activeCount || 0],
+        ['Citas hoy', d.todayCount || 0],
+        ['Completadas', d.completedCount || 0],
+        ['Vendido', RTApi.money(d.totalSold || 0)],
+        ['Reviews pendientes', d.pendingReviews || 0]
+      ].map(function(item){ return '<article class="metric-card"><span>' + item[0] + '</span><strong>' + item[1] + '</strong></article>'; }).join('');
+      var next = d.nextAppointment;
+      $('nextAppointment').innerHTML = next ? '<strong>' + RTApi.esc(next.customerName) + '</strong><br>' + RTApi.esc(next.preferredDate + ' ' + next.preferredTime) + '<br>' + RTApi.esc(next.customerAddress) : 'Sin cita activa.';
+    }
+    function renderAppointments(){
+      var list = adminData.appointments || [];
+      if(!list.length){ $('appointmentsTable').innerHTML = '<div class="empty">No hay citas todavía.</div>'; return; }
+      $('appointmentsTable').innerHTML = '<table><thead><tr><th>Cita</th><th>Clienta</th><th>Servicios</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function(item){
+        var services = (item.items || []).map(function(row){ return (row.quantity || 1) + 'x ' + (row.nameEs || row.name); }).join('<br>');
+        return '<tr><td><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td>' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td>' + services + '</td><td>' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + '</td><td>' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span></td><td><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">Abrir QR</button></td></tr>';
+      }).join('') + '</tbody></table>';
+    }
+    async function updateStatus(id, status){
+      if(!status) return;
+      try { await adminCall('updateAppointmentStatus', { appointmentId:id, status:status }); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    function openQrFromAppointment(id, token){
+      $('qrText').value = 'ENAIL|' + id + '|' + token;
+      showPanel('qr');
+      verifyQr();
+    }
+    function renderServices(){
+      var list = adminData.services || [];
+      $('servicesList').innerHTML = list.map(function(item){
+        return '<div class="extra-row"><div><strong>' + RTApi.esc(item.category + ' - ' + item.name) + '</strong><br><span class="section-sub">' + RTApi.money(item.price) + ' | ' + RTApi.esc(item.available) + '</span></div><div class="toolbar"><button class="btn secondary" type="button" onclick="editService(\'' + item.rowNumber + '\')">Editar</button><button class="btn secondary" type="button" onclick="toggleService(\'' + RTApi.esc(item.id) + '\')">On/Off</button></div></div>';
+      }).join('') || '<div class="empty">No hay servicios.</div>';
+    }
+    function editService(rowNumber){
+      var item = (adminData.services || []).find(function(service){ return String(service.rowNumber) === String(rowNumber); });
+      if(!item) return;
+      $('serviceRow').value = item.rowNumber;
+      $('serviceId').value = item.id;
+      $('serviceCategory').value = item.category;
+      $('serviceName').value = item.name;
+      $('serviceNameFr').value = item.nameFr;
+      $('serviceDescription').value = item.description;
+      $('serviceDescriptionFr').value = item.descriptionFr;
+      $('servicePrice').value = item.price;
+      $('serviceDuration').value = item.durationMinutes;
+      $('serviceOrder').value = item.order === 9999 ? '' : item.order;
+      $('serviceImage').value = item.image;
+      $('serviceBeforeImage').value = item.beforeImage || '';
+      $('serviceAfterImage').value = item.afterImage || '';
+      setPreview('serviceImagePreview', item.image);
+      setPreview('serviceBeforePreview', item.beforeImage);
+      setPreview('serviceAfterPreview', item.afterImage);
+      $('serviceAvailable').value = item.available || 'Yes';
+    }
+    function resetServiceForm(){
+      $('serviceForm').reset();
+      $('serviceRow').value = '';
+      $('serviceId').value = '';
+      $('serviceImage').value = '';
+      $('serviceBeforeImage').value = '';
+      $('serviceAfterImage').value = '';
+      $('serviceOrder').value = 1;
+      $('serviceDuration').value = 60;
+      setPreview('serviceImagePreview', '');
+      setPreview('serviceBeforePreview', '');
+      setPreview('serviceAfterPreview', '');
+      $('serviceUploadStatus').textContent = '';
+    }
+    async function saveService(event){
+      event.preventDefault();
+      await uploadServicePhotosIfNeeded();
+      var service = { rowNumber:$('serviceRow').value, id:$('serviceId').value, category:$('serviceCategory').value, name:$('serviceName').value, nameFr:$('serviceNameFr').value, description:$('serviceDescription').value, descriptionFr:$('serviceDescriptionFr').value, price:$('servicePrice').value, durationMinutes:$('serviceDuration').value, order:$('serviceOrder').value, image:$('serviceImage').value, beforeImage:$('serviceBeforeImage').value, afterImage:$('serviceAfterImage').value, available:$('serviceAvailable').value, taxable:'No' };
+      try { await adminCall('saveService', { service:service }); resetServiceForm(); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    async function toggleService(id){ try { await adminCall('toggleService', { id:id }); await refreshAll(); } catch(error){ toast(error.message || String(error)); } }
+    function setPreview(id, url){
+      var image = $(id);
+      if(!image) return;
+      image.src = url || '';
+      image.style.display = url ? 'block' : 'none';
+    }
+    function previewPhotoFile(input, previewId){
+      var file = input.files && input.files[0];
+      if(!file){ setPreview(previewId, ''); return; }
+      var reader = new FileReader();
+      reader.onload = function(){ setPreview(previewId, reader.result); };
+      reader.readAsDataURL(file);
+    }
+    async function uploadServicePhotosIfNeeded(){
+      var jobs = [
+        { input:'serviceImageFile', target:'serviceImage', label:'principal' },
+        { input:'serviceBeforeFile', target:'serviceBeforeImage', label:'antes' },
+        { input:'serviceAfterFile', target:'serviceAfterImage', label:'después' }
+      ];
+      for(var i = 0; i < jobs.length; i++){
+        var job = jobs[i];
+        var input = $(job.input);
+        var file = input && input.files && input.files[0];
+        if(!file) continue;
+        $('serviceUploadStatus').textContent = 'Subiendo foto ' + job.label + '...';
+        var dataUrl = await fileToDataUrl(file);
+        var result = await adminBridgeCall('uploadImage', { dataUrl:dataUrl, fileName:file.name, context:'service-' + job.label });
+        $(job.target).value = result.url;
+      }
+      $('serviceUploadStatus').textContent = '';
+    }
+    function fileToDataUrl(file){
+      return new Promise(function(resolve, reject){
+        var reader = new FileReader();
+        reader.onload = function(){ resolve(reader.result); };
+        reader.onerror = function(){ reject(new Error('No se pudo leer la imagen.')); };
+        reader.readAsDataURL(file);
+      });
+    }
+    function adminBridgeCall(action, payload){
+      payload = payload || {};
+      payload.sessionToken = sessionToken;
+      payload.userAgent = navigator.userAgent;
+      return new Promise(function(resolve, reject){
+        var iframeName = 'bridge_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        var iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.style.display = 'none';
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.EINNYAD_SYSTEM.adminApiUrl;
+        form.target = iframeName;
+        form.style.display = 'none';
+        var fields = { bridge:'1', action:action, payload:JSON.stringify(payload) };
+        Object.keys(fields).forEach(function(key){
+          var input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = fields[key];
+          form.appendChild(input);
+        });
+        var timer = setTimeout(cleanupReject, 60000);
+        function cleanup(){
+          clearTimeout(timer);
+          window.removeEventListener('message', onMessage);
+          if(form.parentNode) form.parentNode.removeChild(form);
+          if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }
+        function cleanupReject(){ cleanup(); reject(new Error('La subida tardó demasiado.')); }
+        function onMessage(event){
+          var response = event.data;
+          if(!response || typeof response !== 'object' || (!('success' in response))) return;
+          cleanup();
+          if(response.success) resolve(response.data || response);
+          else reject(new Error(response.message || 'Error subiendo imagen'));
+        }
+        window.addEventListener('message', onMessage);
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+    function renderAvailability(){
+      var data = adminData.availability || {};
+      var hours = data.hours || [];
+      var defaultDays = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+      if(!hours.length) hours = defaultDays.map(function(day){ return { day:day, open:'09:00', close: day === 'Domingo' ? '' : '18:00', active: day === 'Domingo' ? 'No' : 'Yes' }; });
+      $('hoursEditor').innerHTML = hours.map(function(row){
+        return '<div class="hour-row" data-day="' + RTApi.esc(row.day) + '"><strong>' + RTApi.esc(row.day) + '</strong><input class="hour-open" type="time" value="' + RTApi.esc(row.open || '') + '"><input class="hour-close" type="time" value="' + RTApi.esc(row.close || '') + '"><label><input class="hour-active" type="checkbox" ' + (row.active === 'Yes' ? 'checked' : '') + '> Abierto</label></div>';
+      }).join('');
+      $('blocksList').innerHTML = (data.blocks || []).filter(function(block){ return block.active !== 'No'; }).map(function(block){
+        return '<div class="extra-row"><div><strong>' + RTApi.esc(block.date) + ' | ' + RTApi.esc(block.startTime) + '-' + RTApi.esc(block.endTime) + '</strong><br><span class="section-sub">' + RTApi.esc(block.reason || 'Bloqueo manual') + '</span></div><button class="btn danger" type="button" onclick="removeBlock(\'' + RTApi.esc(block.blockId) + '\')">Quitar</button></div>';
+      }).join('') || '<div class="empty">No hay bloqueos activos.</div>';
+    }
+    async function saveHours(){
+      var hours = Array.from(document.querySelectorAll('.hour-row')).map(function(row){
+        return { day: row.getAttribute('data-day'), open: row.querySelector('.hour-open').value, close: row.querySelector('.hour-close').value, active: row.querySelector('.hour-active').checked ? 'Yes' : 'No' };
+      });
+      showLoading('Guardando horarios...');
+      try { adminData.availability = await adminCall('saveBusinessHours', { hours:hours }); renderAvailability(); toast('Horarios guardados'); }
+      catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    async function saveBlock(event){
+      event.preventDefault();
+      showLoading('Guardando bloqueo...');
+      try {
+        adminData.availability = await adminCall('saveBlockedSlot', { date:$('blockDate').value, startTime:$('blockStart').value, endTime:$('blockEnd').value, reason:$('blockReason').value });
+        event.target.reset();
+        renderAvailability();
+        toast('Bloqueo guardado');
+      } catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    async function removeBlock(blockId){
+      showLoading('Quitando bloqueo...');
+      try { adminData.availability = await adminCall('removeBlockedSlot', { blockId:blockId }); renderAvailability(); toast('Bloqueo removido'); }
+      catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    function renderPromos(){
+      $('promosList').innerHTML = (adminData.promotions || []).map(function(promo){
+        return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code) + '</span><h3>' + RTApi.esc(promo.title) + '</h3><p class="section-sub">' + RTApi.esc(promo.description) + '</p><strong>' + RTApi.esc(promo.type) + ' ' + RTApi.esc(promo.value) + '</strong></div>';
+      }).join('') || '<div class="empty">No hay promos.</div>';
+    }
+    async function savePromo(event){
+      event.preventDefault();
+      var promotion = { code:$('promoCode').value, title:$('promoTitle').value, titleFr:$('promoTitleFr').value, description:$('promoDescription').value, descriptionFr:$('promoDescriptionFr').value, type:$('promoType').value, value:$('promoValue').value, active:$('promoActive').value, minSubtotal:$('promoMinSubtotal').value };
+      try { await adminCall('savePromotion', { promotion:promotion }); event.target.reset(); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    function renderReviews(){
+      $('reviewsList').innerHTML = (adminData.reviews || []).map(function(review){
+        return '<div class="card"><span class="badge ' + (review.status === 'Approved' ? 'green' : 'dark') + '">' + RTApi.esc(review.status) + '</span><h3>' + RTApi.esc(review.name) + ' - ' + RTApi.esc(review.rating) + '/5</h3><p>' + RTApi.esc(review.text) + '</p><div class="toolbar"><button class="btn success" type="button" onclick="reviewStatus(' + review.rowNumber + ', \'Approved\')">Aprobar</button><button class="btn secondary" type="button" onclick="reviewStatus(' + review.rowNumber + ', \'Pending\')">Pendiente</button><button class="btn danger" type="button" onclick="reviewStatus(' + review.rowNumber + ', \'Hidden\')">Ocultar</button></div></div>';
+      }).join('') || '<div class="empty">No hay reseñas.</div>';
+    }
+    async function reviewStatus(rowNumber, status){ try { await adminCall('updateReviewStatus', { rowNumber:rowNumber, status:status }); await refreshAll(); } catch(error){ toast(error.message || String(error)); } }
+    function fillSettings(){
+      var c = adminData.config || {};
+      $('cfgName').value = c.name || '';
+      $('cfgOwnerName').value = c.ownerName || '';
+      $('cfgPhone').value = c.phone || '';
+      $('cfgEmail').value = c.ownerEmail || c.email || '';
+      $('cfgServiceArea').value = c.serviceArea || c.address || '';
+      $('cfgAboutText').value = c.aboutText || '';
+      $('cfgTravelFee').value = c.travelFee || 0;
+      $('cfgInstagram').value = c.instagramUrl || '';
+      $('cfgQrEnabled').value = c.qrEnabled || 'Yes';
+    }
+    function fillPayments(){
+      var p = adminData.payments || {};
+      $('payEnabled').value = p.enabled || 'No';
+      $('payProvider').value = p.provider || '';
+      $('payLink').value = p.link || '';
+      $('payButtonLabel').value = p.buttonLabel || 'Pagar seguro';
+      $('payRedirectMessageEs').value = p.redirectMessageEs || '';
+      $('payRedirectMessageFr').value = p.redirectMessageFr || '';
+      $('payCashEnabled').value = p.cashEnabled || 'Yes';
+    }
+    async function saveSettings(event){
+      event.preventDefault();
+      var config = { name:$('cfgName').value, ownerName:$('cfgOwnerName').value, phone:$('cfgPhone').value, email:$('cfgEmail').value, ownerEmail:$('cfgEmail').value, serviceArea:$('cfgServiceArea').value, address:$('cfgServiceArea').value, aboutText:$('cfgAboutText').value, taxRate:0, travelFee:$('cfgTravelFee').value, instagramUrl:$('cfgInstagram').value, qrEnabled:$('cfgQrEnabled').value };
+      try { await adminCall('saveSalonConfig', { config:config }); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    async function savePayments(event){
+      event.preventDefault();
+      var data = { enabled:$('payEnabled').value, provider:$('payProvider').value, link:$('payLink').value, buttonLabel:$('payButtonLabel').value, redirectMessageEs:$('payRedirectMessageEs').value, redirectMessageFr:$('payRedirectMessageFr').value, cashEnabled:$('payCashEnabled').value };
+      try { await adminCall('savePaymentsConfig', data); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    function renderLogs(){
+      var list = adminData.logs || [];
+      $('logsList').innerHTML = list.length ? '<table><thead><tr><th>Fecha</th><th>Accion</th><th>Cita</th><th>Detalle</th><th>Resultado</th></tr></thead><tbody>' + list.map(function(log){ return '<tr><td>' + RTApi.esc(log.timestamp || '') + '</td><td>' + RTApi.esc(log.action || '') + '</td><td>' + RTApi.esc(log.appointmentId || '') + '</td><td>' + RTApi.esc(log.details || '') + '</td><td>' + RTApi.esc(log.result || '') + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">No hay logs.</div>';
+    }
+    async function clearLogs(){
+      var ok = await confirmAction('Borrar logs', 'Esto limpia logs técnicos y QR logs. No borra citas.');
+      if(!ok) return;
+      try { await adminCall('clearLogs', {}); await refreshAll(); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+
+    async function verifyQr(){
+      var raw = $('qrText').value.trim();
+      if(!raw) return toast('Pega o escanea el QR.');
+      $('verifyQrBtn').disabled = true;
+      try {
+        var result = await adminCall('verifyAppointmentQr', { raw:raw });
+        currentQrAppointment = result.appointment;
+        renderQrResult(result.appointment, result.receiptOnly);
+      } catch(error) {
+        currentQrAppointment = null;
+        $('qrResult').innerHTML = '<div class="empty">' + RTApi.esc(error.message || String(error)) + '</div>';
+      } finally {
+        $('verifyQrBtn').disabled = false;
+      }
+    }
+    function renderQrResult(item, receiptOnly){
+      if(!item){ $('qrResult').innerHTML = '<div class="empty">Sin cita.</div>'; return; }
+      var extras = item.extras || [];
+      var servicesOptions = (adminData.services || []).filter(function(service){ return service.visible !== false; }).map(function(service){ return '<option value="' + RTApi.esc(service.id) + '" data-price="' + RTApi.esc(service.price) + '">' + RTApi.esc(service.category + ' - ' + service.name) + ' - ' + RTApi.money(service.price) + '</option>'; }).join('');
+      var extrasHtml = extras.length ? '<div class="extras-list">' + extras.map(function(extra){ return '<div class="extra-row"><div><strong>' + RTApi.esc(extra.name) + '</strong><br><span class="section-sub">' + RTApi.money(extra.price) + ' | ' + RTApi.esc(extra.notes || extra.paymentMethod || '') + '</span></div>' + (receiptOnly ? '' : '<button class="btn danger" type="button" onclick="removeExtra(\'' + RTApi.esc(extra.extraId) + '\')">Remover</button>') + '</div>'; }).join('') + '</div>' : '<div class="empty">No hay extras agregados.</div>';
+      $('qrResult').innerHTML = '<div><span class="badge ' + (receiptOnly ? 'dark' : 'green') + '">' + RTApi.esc(receiptOnly ? 'Recibo final' : (item.qrStatus || 'Active')) + '</span><h2>' + RTApi.esc(item.appointmentId) + '</h2><p><strong>' + RTApi.esc(item.customerName) + '</strong><br>' + RTApi.esc(item.customerPhone) + '<br>' + RTApi.esc(item.customerAddress) + '</p><p class="section-sub">' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + ' | Estado: ' + RTApi.esc(item.status) + '</p><div class="admin-grid"><div class="metric-card"><span>Total actual</span><strong>' + RTApi.money(item.totalUpdated || item.total) + '</strong></div><div class="metric-card"><span>Extras</span><strong>' + RTApi.money(item.extraTotal || 0) + '</strong></div></div><div class="toolbar" style="margin:14px 0;">' + (receiptOnly ? '' : '<button class="btn secondary" type="button" onclick="updateQrStage(\'Client arrived\')">Clienta llegó</button><button class="btn secondary" type="button" onclick="updateQrStage(\'In service\')">En servicio</button><button class="btn success" type="button" onclick="finishAppointment()">Finalizar cita</button>') + '</div><h3>Servicios extras</h3>' + extrasHtml + (receiptOnly ? '' : '<div class="card" style="box-shadow:none;margin-top:12px;"><label class="field"><span>Servicio extra activo</span><select id="extraService" onchange="fillExtraFromService()"><option value="manual">Manual</option>' + servicesOptions + '</select></label><label class="field"><span>Nombre extra</span><input id="extraName"></label><label class="field"><span>Precio</span><input id="extraPrice" type="number" min="0" step="0.01" value="0"></label><label class="field"><span>Notas</span><textarea id="extraNotes"></textarea></label><button class="btn full" type="button" onclick="addExtra()">Agregar extra al recibo</button></div>') + '</div>';
+    }
+    function fillExtraFromService(){
+      var select = $('extraService');
+      var option = select.options[select.selectedIndex];
+      if(!option || select.value === 'manual') return;
+      $('extraName').value = option.textContent.split(' - ').slice(1, -1).join(' - ') || option.textContent;
+      $('extraPrice').value = option.getAttribute('data-price') || '0';
+    }
+    async function updateQrStage(stage){
+      if(!currentQrAppointment) return;
+      try {
+        currentQrAppointment = await adminCall('updateQrStage', { appointmentId:currentQrAppointment.appointmentId, stage:stage });
+        renderQrResult(currentQrAppointment, currentQrAppointment.status === 'Completed');
+        await refreshAll();
+      } catch(error){ toast(error.message || String(error)); }
+    }
+    async function addExtra(){
+      if(!currentQrAppointment) return;
+      var payload = { appointmentId:currentQrAppointment.appointmentId, serviceId:$('extraService').value, name:$('extraName').value, price:$('extraPrice').value, notes:$('extraNotes').value };
+      try {
+        currentQrAppointment = await adminCall('saveAppointmentExtra', payload);
+        renderQrResult(currentQrAppointment, false);
+        await refreshAll();
+        toast('Extra agregado');
+      } catch(error){ toast(error.message || String(error)); }
+    }
+    async function removeExtra(extraId){
+      if(!currentQrAppointment) return;
+      try {
+        currentQrAppointment = await adminCall('removeAppointmentExtra', { appointmentId:currentQrAppointment.appointmentId, extraId:extraId });
+        renderQrResult(currentQrAppointment, false);
+        await refreshAll();
+      } catch(error){ toast(error.message || String(error)); }
+    }
+    async function finishAppointment(){
+      if(!currentQrAppointment) return;
+      var ok = await confirmAction('Finalizar cita', 'Se cerrará el QR y se enviará el recibo final actualizado.');
+      if(!ok) return;
+      try {
+        currentQrAppointment = await adminCall('finishAppointment', { appointmentId:currentQrAppointment.appointmentId });
+        renderQrResult(currentQrAppointment, true);
+        await refreshAll();
+        toast('Cita finalizada y recibo enviado');
+      } catch(error){ toast(error.message || String(error)); }
+    }
+
+    function setQrStatus(message, error){ $('qrCameraStatus').textContent = message; $('qrCameraStatus').style.color = error ? 'var(--danger)' : ''; }
+    async function startQrCamera(){
+      stopQrCamera();
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ setQrStatus('Camara no disponible en este navegador. Sube una foto o pega el token.', true); return; }
+      try {
+        var stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false });
+        qrStream = stream;
+        var video = $('qrVideo');
+        video.srcObject = stream;
+        await video.play();
+        setQrStatus('Camara activa. Mantiene el QR centrado.', false);
+        scanQrFrame();
+      } catch(error) {
+        setQrStatus(cameraError(error), true);
+      }
+    }
+    function cameraError(error){
+      var name = error && error.name;
+      if(name === 'NotAllowedError' || name === 'SecurityError') return 'Permiso de cámara bloqueado. Permite cámara en el navegador y usa HTTPS.';
+      if(name === 'NotFoundError') return 'No se encontró cámara. Sube una foto o pega el token.';
+      return (error && error.message) || 'No se pudo abrir la cámara.';
+    }
+    async function scanQrFrame(){
+      if(!qrStream) return;
+      var video = $('qrVideo');
+      var raw = await detectQrFromVideo(video);
+      if(raw){
+        $('qrText').value = raw;
+        setQrStatus('QR detectado. Verificando cita...', false);
+        stopQrCamera();
+        verifyQr();
+        return;
+      }
+      qrFrame = requestAnimationFrame(scanQrFrame);
+    }
+    async function detectQrFromVideo(video){
+      if(!video.videoWidth || !video.videoHeight) return '';
+      if('BarcodeDetector' in window){
+        try {
+          qrDetector = qrDetector || new BarcodeDetector({ formats:['qr_code'] });
+          var codes = await qrDetector.detect(video);
+          if(codes && codes[0] && codes[0].rawValue) return codes[0].rawValue;
+        } catch(error) {}
+      }
+      if(typeof window.jsQR === 'function'){
+        var canvas = $('qrCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        var ctx = canvas.getContext('2d', { willReadFrequently:true });
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts:'attemptBoth' });
+        return code && code.data ? code.data : '';
+      }
+      return '';
+    }
+    function stopQrCamera(){
+      if(qrFrame){ cancelAnimationFrame(qrFrame); qrFrame = null; }
+      if(qrStream){ qrStream.getTracks().forEach(function(track){ track.stop(); }); qrStream = null; }
+      if($('qrVideo')) $('qrVideo').srcObject = null;
+    }
+    async function scanQrImage(file){
+      if(!file) return;
+      try {
+        var raw = await qrFromImage(file);
+        if(!raw) throw new Error('No pude leer el QR. Intenta una foto más clara o pega el token.');
+        $('qrText').value = raw;
+        setQrStatus('QR leido desde foto. Verificando...', false);
+        verifyQr();
+      } catch(error){ setQrStatus(error.message || String(error), true); }
+      finally { $('qrImageInput').value = ''; }
+    }
+    function qrFromImage(file){
+      return new Promise(function(resolve, reject){
+        var image = new Image();
+        var url = URL.createObjectURL(file);
+        image.onload = async function(){
+          try {
+            var canvas = $('qrCanvas');
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+            var ctx = canvas.getContext('2d', { willReadFrequently:true });
+            ctx.drawImage(image, 0, 0);
+            if('BarcodeDetector' in window){
+              try {
+                qrDetector = qrDetector || new BarcodeDetector({ formats:['qr_code'] });
+                var codes = await qrDetector.detect(canvas);
+                if(codes && codes[0] && codes[0].rawValue){ URL.revokeObjectURL(url); resolve(codes[0].rawValue); return; }
+              } catch(error) {}
+            }
+            if(typeof window.jsQR === 'function'){
+              var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              var code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts:'attemptBoth' });
+              URL.revokeObjectURL(url);
+              resolve(code && code.data ? code.data : '');
+              return;
+            }
+            URL.revokeObjectURL(url);
+            resolve('');
+          } catch(error){ URL.revokeObjectURL(url); reject(error); }
+        };
+        image.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('No se pudo abrir la imagen.')); };
+        image.src = url;
+      });
+    }
+    function confirmAction(title, message){
+      $('confirmTitle').textContent = title;
+      $('confirmMessage').textContent = message;
+      $('confirmModal').classList.add('open');
+      return new Promise(function(resolve){ confirmResolver = resolve; });
+    }
+    function resolveConfirm(value){
+      $('confirmModal').classList.remove('open');
+      if(confirmResolver) confirmResolver(value);
+      confirmResolver = null;
+    }
+
+    if(sessionToken) bootstrap();
+    else { if(window.RTIntro) RTIntro.hide(120); }
+  </script>
+</body>
+</html>

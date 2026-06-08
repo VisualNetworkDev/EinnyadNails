@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EinnyadNails</title>
+  <meta name="theme-color" content="#2d131e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EinnyadNails">
+  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v3">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v3">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v3">
+  <script src="assets/config.js?v=einnyadnails-v3"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v3"></script>
+</head>
+<body>
+  <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
+    <div class="intro-card">
+      <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Reservas a domicilio</small></span></div>
+      <div class="intro-main"><div class="intro-plate"></div><h2>Cargando tu experiencia</h2><p>Preparando servicios, promociones, reseñas y ajustes de reserva.</p></div>
+      <div class="intro-status"><span id="appIntroStep">Conectando con el salón...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">EN</span>
+        <span><span id="biz">EinnyadNails</span><small data-i18n="subtitle">Uñas a domicilio</small></span>
+      </a>
+      <nav class="navlinks" aria-label="Menu principal">
+        <button class="active" type="button" data-section="services" data-i18n="navServices" onclick="showSection('services', this)">Servicios</button>
+        <button type="button" data-section="offers" data-i18n="navOffers" onclick="showSection('offers', this)">Promos</button>
+        <button type="button" data-section="about" data-i18n="navAbout" onclick="showSection('about', this)">Sobre mi</button>
+        <button type="button" data-section="reviews" data-i18n="navReviews" onclick="showSection('reviews', this)">Reseñas</button>
+        <button type="button" data-section="contact" data-i18n="navContact" onclick="showSection('contact', this)">Contacto</button>
+        <button type="button" onclick="setLanguage(currentLang === 'es' ? 'fr' : 'es')"><span id="langLabel">FR</span></button>
+        <button class="btn secondary" type="button" data-install-app onclick="RTPWA.install()" style="display:none;" data-i18n="install">Instalar</button>
+        <button class="btn secondary" type="button" onclick="openCart()"><span data-i18n="cart">Reserva</span> <span id="cartCount">0</span></button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero" id="hero">
+    <div class="container hero-inner">
+      <div>
+        <span class="pill" data-i18n="heroPill">Servicio de uñas a domicilio</span>
+        <h1 id="heroTitle" data-i18n="heroTitle">Uñas elegantes sin salir de casa.</h1>
+        <p id="heroText" data-i18n="heroText">Reserva manicure, gel, acrílicas, pedicure o nail art. Recibes un QR para verificar la cita cuando la técnica llegue.</p>
+        <div class="hero-actions">
+          <button class="btn" type="button" onclick="showSection('services')" data-i18n="reserveNow">Reservar cita</button>
+          <button class="btn secondary" type="button" onclick="showSection('offers')" data-i18n="seePromos">Ver promociones</button>
+        </div>
+      </div>
+      <aside class="spotlight-card" id="heroSpotlight">
+        <span class="pill">EinnyadNails</span>
+        <h3>Promos y experiencias</h3>
+        <p>Reserva con una experiencia moderna y recibe tu QR de cita.</p>
+      </aside>
+    </div>
+  </section>
+
+  <main class="container">
+    <section id="client-services" class="client-section active section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" data-i18n="servicesTitle">Servicios</h2>
+          <p class="section-sub" data-i18n="servicesText">Selecciona los servicios que quieres reservar. Puedes agregar más de uno antes de confirmar.</p>
+        </div>
+      </div>
+      <div id="catTabs" class="category-row"></div>
+      <div id="servicesGrid" class="services-grid"></div>
+      <div id="beforeAfterSection" class="before-after-section" style="display:none;">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Antes y después</h2>
+            <p class="section-sub">Resultados reales organizados por servicio.</p>
+          </div>
+        </div>
+        <div id="beforeAfterGrid" class="before-after-grid"></div>
+      </div>
+    </section>
+
+    <section id="client-offers" class="client-section section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" data-i18n="offersTitle">Promociones</h2>
+          <p class="section-sub" data-i18n="offersText">Ofertas activas configuradas por EinnyadNails.</p>
+        </div>
+      </div>
+      <div id="offers" class="grid grid-3"></div>
+    </section>
+
+    <section id="client-about" class="client-section section">
+      <div class="card">
+        <span class="badge green" data-i18n="aboutBadge">Sobre EinnyadNails</span>
+        <h2 class="section-title" data-i18n="aboutTitle">Belleza de uñas con detalle.</h2>
+        <p id="about" class="section-sub"></p>
+      </div>
+    </section>
+
+    <section id="client-reviews" class="client-section section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" data-i18n="reviewsTitle">Reseñas</h2>
+          <p class="section-sub" data-i18n="reviewsText">Comentarios de clientas aprobados por el negocio.</p>
+        </div>
+      </div>
+      <div id="reviews" class="grid grid-3"></div>
+      <div class="review-submit card">
+        <div>
+          <span class="badge green" data-i18n="leaveReview">Deja tu reseña</span>
+          <h3 data-i18n="reviewPromptTitle">Cuenta tu experiencia</h3>
+          <p class="section-sub" data-i18n="reviewPromptText">Tu comentario puede aparecer en la página cuando sea revisado.</p>
+        </div>
+        <div class="split">
+          <label class="field"><span data-i18n="name">Nombre</span><input id="reviewName" maxlength="80"></label>
+          <label class="field"><span data-i18n="rating">Calificación</span><select id="reviewRating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
+        </div>
+        <label class="field"><span data-i18n="review">Reseña</span><textarea id="reviewText" maxlength="500"></textarea></label>
+        <button id="reviewBtn" class="btn" type="button" onclick="submitReview()" data-i18n="sendReview">Enviar reseña</button>
+      </div>
+    </section>
+
+    <section id="client-contact" class="client-section section">
+      <div class="contact-modern">
+        <div class="contact-copy">
+          <span class="badge dark" data-i18n="contactBadge">Contacto</span>
+          <h2 class="section-title" data-i18n="contactTitle">Reserva o consulta disponibilidad.</h2>
+          <p class="section-sub" data-i18n="contactText">Servicio a domicilio en el área configurada por la dueña. Llama o escribe para preguntas antes de reservar.</p>
+          <div class="contact-highlights">
+            <span>Servicio a domicilio</span>
+            <span>Confirmación por QR</span>
+            <span>Recibo actualizado</span>
+          </div>
+        </div>
+        <div class="contact-panel-modern">
+          <a id="phoneAction" class="contact-action" href="#"><span data-i18n="phone">Teléfono</span><strong id="phone"></strong><em data-i18n="call">Llamar</em></a>
+          <a id="emailAction" class="contact-action" href="#"><span>Email</span><strong id="email"></strong><em>Email</em></a>
+          <div class="contact-action"><span data-i18n="serviceArea">Área de servicio</span><strong id="addr"></strong><em>Home service</em></div>
+          <a id="igLine" class="contact-action" style="display:none;" href="#" target="_blank" rel="noopener"><span>Instagram</span><strong>@EinnyadNails</strong><em data-i18n="open">Abrir</em></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <button id="cartFab" class="cart-fab" type="button" onclick="openCart()"><span data-i18n="cart">Reserva</span> <span id="cartCount2">0</span></button>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-backdrop" onclick="closeCart()"></div>
+    <div class="drawer-panel">
+      <div class="drawer-head">
+        <div>
+          <strong data-i18n="drawerTitle">Tu cita</strong>
+          <div class="section-sub" data-i18n="drawerSub">Revisa servicios y confirma datos</div>
+        </div>
+        <button class="btn secondary" type="button" onclick="closeCart()" data-i18n="close">Cerrar</button>
+      </div>
+      <div class="drawer-body">
+        <div id="cartItems"></div>
+        <div id="totals" class="totals"></div>
+
+        <div class="checkout-block">
+          <h3 style="margin-top:0;" data-i18n="appointmentInfo">Información de la cita</h3>
+          <div class="split">
+            <label class="field"><span data-i18n="preferredDate">Fecha deseada</span><input id="preferredDate" type="date"></label>
+            <label class="field"><span data-i18n="preferredTime">Hora deseada</span><input id="preferredTime" type="time"></label>
+          </div>
+          <div id="timeSlots" class="time-slots"></div>
+          <label class="field"><span data-i18n="address">Dirección del servicio</span><input id="cAddress" autocomplete="street-address"></label>
+          <div class="split">
+            <label class="field"><span data-i18n="name">Nombre</span><input id="cName" autocomplete="name"></label>
+            <label class="field"><span data-i18n="phone">Teléfono</span><input id="cPhone" autocomplete="tel"></label>
+          </div>
+          <label class="field"><span>Email</span><input id="cEmail" type="email" autocomplete="email"></label>
+          <div class="split">
+            <label class="field"><span data-i18n="coupon">Cupón</span><input id="coupon" oninput="renderCart()"></label>
+            <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option>Cash</option><option>Payment link</option><option>Zelle</option><option>Cash App</option></select></label>
+          </div>
+          <label class="field"><span data-i18n="tip">Propina</span><input id="tip" type="number" min="0" step="0.01" value="0" oninput="renderCart()"></label>
+          <label class="field"><span data-i18n="notes">Notas</span><textarea id="notes"></textarea></label>
+          <label class="field" style="display:flex; align-items:flex-start; gap:10px;"><input id="agree" type="checkbox" style="width:auto; margin-top:4px;"><span id="agreementCopy"></span></label>
+          <button id="placeBtn" class="btn full" type="button" onclick="placeAppointment()" data-i18n="placeAppointment">Reservar cita</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="receiptModal" class="modal">
+    <div class="modal-card">
+      <div id="receipt"></div>
+      <div class="toolbar" style="justify-content:flex-end; margin-top:18px;">
+        <button class="btn secondary" type="button" onclick="$('receiptModal').classList.remove('open')" data-i18n="close">Cerrar</button>
+        <button id="payBtn" class="btn dark" style="display:none" type="button" onclick="payNow()">Pagar seguro</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentModal" class="modal">
+    <div class="modal-card compact-modal">
+      <span class="badge green" data-i18n="securePayment">Pago seguro</span>
+      <h2 id="paymentTitle">Pagar seguro</h2>
+      <p id="paymentMessage" class="section-sub"></p>
+      <div class="toolbar" style="justify-content:flex-end; margin-top:18px;">
+        <button class="btn secondary" type="button" onclick="$('paymentModal').classList.remove('open')" data-i18n="stayHere">Quedarme aquí</button>
+        <button id="continuePaymentBtn" class="btn dark" type="button" onclick="continuePayment()" data-i18n="continuePayment">Continuar al pago</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingModal" class="modal">
+    <div class="modal-card compact-modal">
+      <span class="badge dark">EinnyadNails</span>
+      <h2 data-i18n="savingTitle">Preparando tu cita</h2>
+      <p id="loadingMessage" class="section-sub" data-i18n="savingText">Verificando servicios, precios y recibo.</p>
+      <div style="margin-top:16px;"><span class="loading-inline"></span></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <strong id="footerBusiness">EinnyadNails</strong>
+        <p class="section-sub" data-i18n="footerText">Reservas a domicilio, QR de cita y recibos profesionales.</p>
+      </div>
+      <div><strong data-i18n="contactBadge">Contacto</strong><br><span id="footerAddress"></span><br><span id="footerEmail"></span><br><span id="footerPhone"></span></div>
+      <div class="footer-license"><strong id="licenseName">EinnyadNails Booking System</strong><br><span>Licensed / Powered by <span id="licenseBy">Visual Event Network</span> <span id="footerYear"></span></span></div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    var cfg = {};
+    var services = [];
+    var cats = [];
+    var promos = [];
+    var reviews = [];
+    var payments = { enabled: 'No' };
+    var cart = {};
+    var cat = 'All';
+    var timeSlotsLoading = false;
+    var spotlightIndex = 0;
+    var spotlightTimer = null;
+    var currentLang = localStorage.getItem('en_lang') || (navigator.language && navigator.language.toLowerCase().indexOf('fr') === 0 ? 'fr' : 'es');
+
+    var copy = {
+      es: {
+        subtitle:'Uñas a domicilio', navServices:'Servicios', navOffers:'Promos', navAbout:'Sobre mí', navReviews:'Reseñas', navContact:'Contacto', install:'Instalar', cart:'Reserva',
+        heroPill:'Servicio de uñas a domicilio', heroTitle:'Uñas elegantes sin salir de casa.', heroText:'Reserva manicure, gel, acrílicas, pedicure o nail art. Recibes un QR para verificar la cita cuando la técnica llegue.',
+        reserveNow:'Reservar cita', seePromos:'Ver promociones', servicesTitle:'Servicios', servicesText:'Selecciona los servicios que quieres reservar. Puedes agregar más de uno antes de confirmar.',
+        offersTitle:'Promociones', offersText:'Ofertas activas configuradas por EinnyadNails.', aboutBadge:'Sobre EinnyadNails', aboutTitle:'Belleza de uñas con detalle.',
+        reviewsTitle:'Reseñas', reviewsText:'Comentarios de clientas aprobados por el negocio.', leaveReview:'Deja tu reseña', reviewPromptTitle:'Cuenta tu experiencia', reviewPromptText:'Tu comentario puede aparecer en la página cuando sea revisado.',
+        name:'Nombre', rating:'Calificación', review:'Reseña', sendReview:'Enviar reseña', contactBadge:'Contacto', contactTitle:'Reserva o consulta disponibilidad.', contactText:'Servicio a domicilio en el área configurada por la dueña. Llama o escribe para preguntas antes de reservar.',
+        phone:'Teléfono', call:'Llamar', serviceArea:'Área de servicio', open:'Abrir', drawerTitle:'Tu cita', drawerSub:'Revisa servicios y confirma datos', close:'Cerrar', appointmentInfo:'Información de la cita',
+        preferredDate:'Fecha deseada', preferredTime:'Hora deseada', address:'Dirección del servicio', coupon:'Cupón', payment:'Pago', tip:'Propina', notes:'Notas', placeAppointment:'Reservar cita',
+        securePayment:'Pago seguro', stayHere:'Quedarme aquí', continuePayment:'Continuar al pago', savingTitle:'Preparando tu cita', savingText:'Verificando servicios, precios y recibo.', footerText:'Reservas a domicilio, QR de cita y recibos profesionales.',
+        all:'Todos', add:'Agregar', added:'Servicio agregado', emptyServices:'No hay servicios disponibles.', emptyCart:'No has agregado servicios.', subtotal:'Subtotal', discount:'Descuento', travelFee:'Cargo a domicilio', total:'Total',
+        loadingTimes:'Buscando horarios disponibles...', noTimes:'No hay horarios disponibles para esa fecha.', chooseDateServices:'Selecciona servicios y fecha para ver horarios.',
+        noPromos:'No hay promociones activas ahora.', noReviews:'Todavía no hay reseñas aprobadas.', reviewThanks:'Gracias. Tu reseña fue recibida.', requiredCart:'Selecciona al menos un servicio.', requiredAddress:'La dirección es requerida.', requiredDate:'Selecciona fecha y hora.', requiredAgreement:'Acepta el acuerdo de servicio.',
+        appointmentReceived:'Cita recibida', appointmentId:'ID de cita', qrTitle:'QR de cita', qrHelp:'Muestra este QR cuando la técnica llegue para verificar la cita.', paymentStatus:'Estado de pago'
+      },
+      fr: {
+        subtitle:'Ongles à domicile', navServices:'Services', navOffers:'Promos', navAbout:'À propos', navReviews:'Avis', navContact:'Contact', install:'Installer', cart:'Rendez-vous',
+        heroPill:'Service d’ongles à domicile', heroTitle:'Des ongles élégants sans sortir.', heroText:'Réservez manucure, gel, acrylique, pédicure ou nail art. Vous recevez un QR pour vérifier le rendez-vous à l’arrivée.',
+        reserveNow:'Réserver', seePromos:'Voir promos', servicesTitle:'Services', servicesText:'Sélectionnez les services à réserver. Vous pouvez en ajouter plusieurs avant de confirmer.',
+        offersTitle:'Promotions', offersText:'Promotions actives configurées par EinnyadNails.', aboutBadge:'À propos', aboutTitle:'Beauté des ongles avec détail.',
+        reviewsTitle:'Avis', reviewsText:'Avis de clientes approuvés par l’entreprise.', leaveReview:'Laisser un avis', reviewPromptTitle:'Partagez votre expérience', reviewPromptText:'Votre commentaire peut apparaître après révision.',
+        name:'Nom', rating:'Note', review:'Avis', sendReview:'Envoyer avis', contactBadge:'Contact', contactTitle:'Réserver ou demander disponibilité.', contactText:'Service à domicile dans la zone configurée. Appelez ou écrivez pour toute question.',
+        phone:'Téléphone', call:'Appeler', serviceArea:'Zone de service', open:'Ouvrir', drawerTitle:'Votre rendez-vous', drawerSub:'Révisez les services et confirmez', close:'Fermer', appointmentInfo:'Informations du rendez-vous',
+        preferredDate:'Date souhaitée', preferredTime:'Heure souhaitée', address:'Adresse du service', coupon:'Code promo', payment:'Paiement', tip:'Pourboire', notes:'Notes', placeAppointment:'Réserver',
+        securePayment:'Paiement sécurisé', stayHere:'Rester ici', continuePayment:'Continuer au paiement', savingTitle:'Préparation du rendez-vous', savingText:'Vérification des services, prix et reçu.', footerText:'Réservations à domicile, QR de rendez-vous et reçus professionnels.',
+        all:'Tous', add:'Ajouter', added:'Service ajouté', emptyServices:'Aucun service disponible.', emptyCart:'Aucun service ajouté.', subtotal:'Sous-total', discount:'Rabais', travelFee:'Frais de déplacement', total:'Total',
+        loadingTimes:'Recherche des disponibilités...', noTimes:'Aucune disponibilité pour cette date.', chooseDateServices:'Sélectionnez services et date pour voir les heures.',
+        noPromos:'Aucune promotion active.', noReviews:'Aucun avis approuvé pour le moment.', reviewThanks:'Merci. Votre avis a été reçu.', requiredCart:'Sélectionnez au moins un service.', requiredAddress:'L’adresse est requise.', requiredDate:'Sélectionnez date et heure.', requiredAgreement:'Acceptez les conditions.',
+        appointmentReceived:'Rendez-vous reçu', appointmentId:'ID rendez-vous', qrTitle:'QR du rendez-vous', qrHelp:'Montrez ce QR lorsque la technicienne arrive.', paymentStatus:'Statut du paiement'
+      }
+    };
+
+    function $(id){ return document.getElementById(id); }
+    function t(key){ return (copy[currentLang] && copy[currentLang][key]) || copy.es[key] || key; }
+    function toast(message){ var box = $('toast'); box.textContent = message; box.classList.add('show'); setTimeout(function(){ box.classList.remove('show'); }, 2600); }
+
+    function setLanguage(lang){
+      currentLang = lang === 'fr' ? 'fr' : 'es';
+      localStorage.setItem('en_lang', currentLang);
+      document.documentElement.lang = currentLang === 'fr' ? 'fr-CA' : 'es';
+      $('langLabel').textContent = currentLang === 'es' ? 'FR' : 'ES';
+      document.querySelectorAll('[data-i18n]').forEach(function(node){ node.textContent = t(node.getAttribute('data-i18n')); });
+      $('agreementCopy').textContent = currentLang === 'fr' ? (cfg.agreementTextFr || cfg.agreementText || '') : (cfg.agreementTextEs || cfg.agreementText || '');
+      renderCats();
+      renderServices();
+      renderBeforeAfter();
+      renderOffers();
+      renderReviews();
+      renderCart();
+      renderSpotlight();
+    }
+
+    async function init(){
+      if(window.RTIntro) RTIntro.setStep('Cargando servicios...');
+      var today = new Date().toISOString().slice(0, 10);
+      if($('preferredDate')) $('preferredDate').min = today;
+      if($('preferredDate')) $('preferredDate').addEventListener('change', loadAvailableTimes);
+      setLanguage(currentLang);
+      try {
+        var result = await Promise.all([
+          RTApi.client('getSalonConfig', { language: currentLang }),
+          RTApi.client('getServices', { language: currentLang })
+        ]);
+        cfg = result[0] || {};
+        services = (result[1] && (result[1].services || result[1].items)) || [];
+        cats = ['All'].concat((result[1] && result[1].categories) || []);
+        applyConfig();
+        renderCats();
+        renderServices();
+        renderBeforeAfter();
+        renderCart();
+        loadSecondary();
+      } catch(error) {
+        toast(error.message || String(error));
+        $('servicesGrid').innerHTML = '<div class="empty">API URL no configurada o no disponible.</div>';
+      } finally {
+        if(window.RTIntro) RTIntro.hide(220);
+      }
+    }
+
+    function loadSecondary(){
+      Promise.all([
+        RTApi.client('getPromotions', { language: currentLang }).catch(function(){ return []; }),
+        RTApi.client('getReviews', { language: currentLang }).catch(function(){ return []; }),
+        RTApi.client('getPaymentsConfig', { language: currentLang }).catch(function(){ return {}; })
+      ]).then(function(result){
+        promos = result[0] || [];
+        reviews = result[1] || [];
+        payments = result[2] || { enabled: 'No' };
+        renderOffers();
+        renderReviews();
+        renderSpotlight();
+        startSpotlight();
+      });
+    }
+
+    function applyConfig(){
+      var name = cfg.name || 'EinnyadNails';
+      document.title = name;
+      $('biz').textContent = name;
+      $('footerBusiness').textContent = name;
+      $('about').textContent = cfg.aboutText || '';
+      $('phone').textContent = cfg.phone || '';
+      $('email').textContent = cfg.email || '';
+      $('addr').textContent = cfg.serviceArea || cfg.address || '';
+      $('phoneAction').href = cfg.phone ? 'tel:' + cfg.phone.replace(/[^0-9+]/g, '') : '#';
+      $('emailAction').href = cfg.email ? 'mailto:' + cfg.email : '#';
+      $('footerAddress').textContent = cfg.serviceArea || cfg.address || '';
+      $('footerEmail').textContent = cfg.email || '';
+      $('footerPhone').textContent = cfg.phone || '';
+      $('licenseName').textContent = cfg.licenseName || window.EINNYAD_SYSTEM.licenseName;
+      $('licenseBy').textContent = cfg.licenseBy || window.EINNYAD_SYSTEM.licenseBy;
+      $('footerYear').textContent = new Date().getFullYear();
+      if(cfg.heroImage) document.documentElement.style.setProperty('--hero-image', "url('" + cfg.heroImage + "')");
+      if(cfg.instagramUrl){ $('igLine').style.display = ''; $('igLine').href = cfg.instagramUrl; }
+      setLanguage(currentLang);
+    }
+
+    function showSection(name, button){
+      document.querySelectorAll('.client-section').forEach(function(section){ section.classList.remove('active'); });
+      $('client-' + name).classList.add('active');
+      document.querySelectorAll('.navlinks button[data-section]').forEach(function(btn){ btn.classList.remove('active'); });
+      var navButton = button || document.querySelector('.navlinks button[data-section="' + name + '"]');
+      if(navButton) navButton.classList.add('active');
+      window.scrollTo({ top: document.querySelector('main').offsetTop - 70, behavior: 'smooth' });
+    }
+
+    function renderCats(){
+      if(!cats.length) cats = ['All'];
+      $('catTabs').innerHTML = cats.map(function(category){
+        var label = category === 'All' ? t('all') : category;
+        var encoded = encodeURIComponent(category).replace(/'/g, '%27');
+        return '<button class="cat-chip ' + (category === cat ? 'active' : '') + '" type="button" onclick="selectCategory(\'' + RTApi.esc(encoded) + '\')">' + RTApi.esc(label) + '</button>';
+      }).join('');
+    }
+    function selectCategory(encoded){
+      cat = decodeURIComponent(encoded || t('all'));
+      renderCats();
+      renderServices();
+    }
+    function renderServices(){
+      var allLabel = t('all');
+      var list = (cat === 'All' || cat === allLabel) ? services : services.filter(function(item){ return item.category === cat; });
+      $('servicesGrid').innerHTML = list.map(function(item){
+        var image = item.image || 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80';
+        return '<article class="card service-card"><div class="service-img" style="background-image:url(' + RTApi.esc(image) + ')"></div><div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + t('add') + '</button></div></div></article>';
+      }).join('') || '<div class="empty">' + t('emptyServices') + '</div>';
+    }
+    function renderBeforeAfter(){
+      var pairs = services.filter(function(item){ return item.beforeImage && item.afterImage; });
+      var section = $('beforeAfterSection');
+      if(!section) return;
+      section.style.display = pairs.length ? '' : 'none';
+      $('beforeAfterGrid').innerHTML = pairs.map(function(item){
+        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes"><figcaption>Antes</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="Después"><figcaption>Después</figcaption></figure></div></article>';
+      }).join('');
+    }
+    function renderOffers(){
+      $('offers').innerHTML = promos.map(function(promo){
+        return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code || '') + '</span><h3>' + RTApi.esc(promo.title || '') + '</h3><p class="section-sub">' + RTApi.esc(promo.description || '') + '</p></div>';
+      }).join('') || '<div class="empty">' + t('noPromos') + '</div>';
+    }
+    function renderReviews(){
+      $('reviews').innerHTML = reviews.map(function(review){
+        var stars = Array(Math.max(1, Math.min(5, Number(review.rating || 5)))).fill('&#9733;').join('');
+        return '<div class="card"><div class="price" style="font-size:18px;">' + stars + '</div><p>' + RTApi.esc(review.text || '') + '</p><strong>' + RTApi.esc(review.name || '') + '</strong></div>';
+      }).join('') || '<div class="empty">' + t('noReviews') + '</div>';
+    }
+    function spotlightItems(){
+      var items = [];
+      promos.slice(0, 3).forEach(function(promo){
+        items.push({ type: currentLang === 'fr' ? 'Promo' : 'Promo', title: promo.title || promo.code, text: promo.description || promo.code, badge: promo.code || 'Promo' });
+      });
+      reviews.slice(0, 3).forEach(function(review){
+        items.push({ type: currentLang === 'fr' ? 'Avis' : 'Reseña', title: review.name || 'Clienta', text: review.text || '', badge: (review.rating || 5) + '/5' });
+      });
+      if(!items.length) items.push({ type:'EinnyadNails', title: currentLang === 'fr' ? 'Service à domicile' : 'Cita a domicilio', text: currentLang === 'fr' ? 'Choisissez vos services et recevez un QR pour confirmer le rendez-vous.' : 'Elige tus servicios y recibe un QR para confirmar la cita.', badge:'QR' });
+      return items;
+    }
+    function renderSpotlight(){
+      var box = $('heroSpotlight');
+      if(!box) return;
+      var items = spotlightItems();
+      spotlightIndex = spotlightIndex % items.length;
+      var item = items[spotlightIndex];
+      box.classList.remove('is-changing');
+      void box.offsetWidth;
+      box.classList.add('is-changing');
+      box.innerHTML = '<span class="pill">' + RTApi.esc(item.type) + ' · ' + RTApi.esc(item.badge) + '</span><h3>' + RTApi.esc(item.title) + '</h3><p>' + RTApi.esc(item.text) + '</p><div class="spotlight-dots">' + items.map(function(_, index){ return '<button type="button" class="' + (index === spotlightIndex ? 'active' : '') + '" onclick="setSpotlight(' + index + ')"></button>'; }).join('') + '</div>';
+    }
+    function setSpotlight(index){
+      spotlightIndex = index;
+      renderSpotlight();
+      startSpotlight();
+    }
+    function startSpotlight(){
+      if(spotlightTimer) clearInterval(spotlightTimer);
+      spotlightTimer = setInterval(function(){ spotlightIndex += 1; renderSpotlight(); }, 5200);
+    }
+
+    function addService(id){
+      cart[id] = (cart[id] || 0) + 1;
+      renderCart();
+      loadAvailableTimes();
+      $('cartFab').classList.add('has-items');
+      toast(t('added'));
+    }
+    function qty(id, delta){
+      cart[id] = (cart[id] || 0) + delta;
+      if(cart[id] <= 0) delete cart[id];
+      renderCart();
+    }
+    function payload(){ return Object.keys(cart).map(function(id){ return { id:id, qty:cart[id] }; }); }
+    function calc(){
+      var rows = payload().map(function(entry){ return { item: services.find(function(item){ return String(item.id) === String(entry.id); }), qty: entry.qty }; }).filter(function(row){ return row.item; });
+      var subtotal = rows.reduce(function(sum, row){ return sum + Number(row.item.price || 0) * row.qty; }, 0);
+      var couponCode = $('coupon') ? $('coupon').value.trim().toUpperCase() : '';
+      var promo = couponCode ? promos.find(function(item){ return String(item.code || '').toUpperCase() === couponCode; }) : null;
+      var discount = 0;
+      if(promo && subtotal >= Number(promo.minSubtotal || 0)){
+        discount = String(promo.type || '').toLowerCase() === 'fixed' ? Number(promo.value || 0) : subtotal * (Number(promo.value || 0) / 100);
+      }
+      discount = Math.min(subtotal, Math.max(0, discount));
+      var taxable = Math.max(0, subtotal - discount);
+      var tax = 0;
+      var travelFee = Number(cfg.travelFee || 0);
+      var tip = Number($('tip') ? $('tip').value : 0) || 0;
+      return { rows: rows, subtotal: subtotal, discount: discount, tax: tax, travelFee: travelFee, tip: tip, total: taxable + tax + travelFee + tip };
+    }
+    function renderCart(){
+      var count = payload().reduce(function(sum, item){ return sum + item.qty; }, 0);
+      $('cartCount').textContent = count;
+      $('cartCount2').textContent = count;
+      $('cartFab').classList.toggle('has-items', count > 0);
+      var totals = calc();
+      $('cartItems').innerHTML = totals.rows.map(function(row){
+        return '<div class="cart-line"><div><b>' + RTApi.esc(row.item.name) + '</b><span class="section-sub">' + RTApi.money(row.item.price) + '</span><div class="qty"><button type="button" onclick="qty(\'' + RTApi.esc(row.item.id) + '\', -1)">-</button><strong>' + row.qty + '</strong><button type="button" onclick="qty(\'' + RTApi.esc(row.item.id) + '\', 1)">+</button></div></div><strong>' + RTApi.money(Number(row.item.price || 0) * row.qty) + '</strong></div>';
+      }).join('') || '<div class="empty">' + t('emptyCart') + '</div>';
+      var totalLines = '<div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(totals.subtotal) + '</strong></div><div class="total-line"><span>' + t('discount') + '</span><strong>-' + RTApi.money(totals.discount) + '</strong></div>';
+      if(totals.travelFee > 0) totalLines += '<div class="total-line"><span>' + t('travelFee') + '</span><strong>' + RTApi.money(totals.travelFee) + '</strong></div>';
+      if(totals.tip > 0) totalLines += '<div class="total-line"><span>' + t('tip') + '</span><strong>' + RTApi.money(totals.tip) + '</strong></div>';
+      totalLines += '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(totals.total) + '</strong></div>';
+      $('totals').innerHTML = totalLines;
+      if($('preferredDate') && $('preferredDate').value) loadAvailableTimes();
+    }
+    async function loadAvailableTimes(){
+      var box = $('timeSlots');
+      if(!box) return;
+      if(timeSlotsLoading) return;
+      var date = $('preferredDate') ? $('preferredDate').value : '';
+      var items = payload();
+      if(!date || !items.length){
+        box.innerHTML = '<span class="slot-help">' + t('chooseDateServices') + '</span>';
+        return;
+      }
+      timeSlotsLoading = true;
+      box.innerHTML = '<span class="slot-help">' + t('loadingTimes') + '</span>';
+      try {
+        var result = await RTApi.client('getAvailableTimes', { date: date, items: items, language: currentLang });
+        var times = (result && result.times) || [];
+        if(!times.length){
+          box.innerHTML = '<span class="slot-help">' + t('noTimes') + '</span>';
+          $('preferredTime').value = '';
+          return;
+        }
+        box.innerHTML = times.map(function(time){
+          return '<button class="time-chip ' + ($('preferredTime').value === time ? 'active' : '') + '" type="button" onclick="selectTimeSlot(\'' + RTApi.esc(time) + '\')">' + RTApi.esc(time) + '</button>';
+        }).join('');
+      } catch(error) {
+        box.innerHTML = '<span class="slot-help">' + RTApi.esc(error.message || String(error)) + '</span>';
+      } finally {
+        timeSlotsLoading = false;
+      }
+    }
+    function selectTimeSlot(time){
+      $('preferredTime').value = time;
+      document.querySelectorAll('.time-chip').forEach(function(btn){ btn.classList.toggle('active', btn.textContent.trim() === time); });
+    }
+    function openCart(){ $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false'); }
+    function closeCart(){ $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true'); }
+
+    async function submitReview(){
+      var name = $('reviewName').value.trim();
+      var text = $('reviewText').value.trim();
+      if(!name) return toast(t('name') + ' requerido');
+      if(text.length < 8) return toast('Min 8 caracteres');
+      $('reviewBtn').disabled = true;
+      try {
+        var result = await RTApi.client('submitReview', { name:name, text:text, rating:$('reviewRating').value, language:currentLang });
+        $('reviewName').value = '';
+        $('reviewText').value = '';
+        toast((result && result.message) || t('reviewThanks'));
+      } catch(error) { toast(error.message || String(error)); }
+      finally { $('reviewBtn').disabled = false; }
+    }
+
+    async function placeAppointment(){
+      if(!payload().length) return toast(t('requiredCart'));
+      if(!$('preferredDate').value || !$('preferredTime').value) return toast(t('requiredDate'));
+      if(!$('cAddress').value.trim()) return toast(t('requiredAddress'));
+      if(!$('agree').checked) return toast(t('requiredAgreement'));
+      var request = {
+        language: currentLang,
+        customerName: $('cName').value,
+        customerPhone: $('cPhone').value,
+        customerEmail: $('cEmail').value,
+        customerAddress: $('cAddress').value,
+        preferredDate: $('preferredDate').value,
+        preferredTime: $('preferredTime').value,
+        customerNotes: $('notes').value,
+        coupon: $('coupon').value,
+        paymentMethod: $('payMethod').value,
+        tip: Number($('tip').value || 0),
+        agreementAccepted: true,
+        items: payload(),
+        userAgent: navigator.userAgent
+      };
+      $('placeBtn').disabled = true;
+      $('loadingModal').classList.add('open');
+      try {
+        var result = await RTApi.client('createAppointment', request);
+        cart = {};
+        renderCart();
+        closeCart();
+        renderReceipt(result.appointment, result.payments || payments);
+      } catch(error) { toast(error.message || String(error)); }
+      finally {
+        $('loadingModal').classList.remove('open');
+        $('placeBtn').disabled = false;
+      }
+    }
+
+    function renderReceipt(appointment, paymentConfig){
+      payments = paymentConfig || payments || {};
+      var rows = (appointment.items || []).map(function(item){ return '<div class="cart-line"><span>' + RTApi.esc(item.quantity || 1) + 'x ' + RTApi.esc(currentLang === 'fr' ? (item.nameFr || item.name) : (item.nameEs || item.name)) + '</span><strong>' + RTApi.money(item.lineTotal) + '</strong></div>'; }).join('');
+      var qr = appointment.qrUrl ? '<div class="card" style="margin-top:16px;text-align:center;"><h3>' + t('qrTitle') + '</h3><img src="' + RTApi.esc(appointment.qrUrl) + '" alt="QR" width="190" height="190" style="margin:auto;background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line);"><p class="section-sub">' + t('qrHelp') + '</p><p class="section-sub">Token: ' + RTApi.esc(appointment.qrToken || '') + '</p></div>' : '';
+      var receiptTotals = '<div class="totals"><div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(appointment.subtotal) + '</strong></div><div class="total-line"><span>' + t('discount') + '</span><strong>-' + RTApi.money(appointment.discount) + '</strong></div>';
+      if(Number(appointment.travelFee || 0) > 0) receiptTotals += '<div class="total-line"><span>' + t('travelFee') + '</span><strong>' + RTApi.money(appointment.travelFee) + '</strong></div>';
+      receiptTotals += '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(appointment.total) + '</strong></div></div>';
+      $('receipt').innerHTML = '<div><span class="badge green">' + RTApi.esc(appointment.status || '') + '</span><h2>' + t('appointmentReceived') + '</h2><p class="section-sub">' + t('appointmentId') + ': <strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></p><div class="info-list"><div class="info-row"><span>' + t('preferredDate') + '</span><strong>' + RTApi.esc(appointment.preferredDate + ' ' + appointment.preferredTime) + '</strong></div><div class="info-row"><span>' + t('address') + '</span><strong>' + RTApi.esc(appointment.customerAddress || '') + '</strong></div></div><h3>' + t('servicesTitle') + '</h3>' + rows + receiptTotals + '<p class="section-sub">' + t('paymentStatus') + ': ' + RTApi.esc(appointment.paymentStatus || '') + '</p>' + qr + '</div>';
+      $('payBtn').style.display = payments.enabled === 'Yes' && payments.link && String(appointment.paymentMethod || '').toLowerCase().indexOf('cash') === -1 ? '' : 'none';
+      $('payBtn').textContent = payments.buttonLabel || t('securePayment');
+      $('receiptModal').classList.add('open');
+    }
+    function payNow(){
+      if(!payments || !payments.link) return;
+      $('paymentTitle').textContent = payments.buttonLabel || t('securePayment');
+      $('paymentMessage').textContent = currentLang === 'fr' ? (payments.redirectMessageFr || payments.redirectMessage || '') : (payments.redirectMessageEs || payments.redirectMessage || '');
+      $('paymentModal').classList.add('open');
+    }
+    function continuePayment(){
+      if(payments && payments.link) window.open(payments.link, '_blank');
+      $('paymentModal').classList.remove('open');
+    }
+
+    init();
+  </script>
+</body>
+</html>
