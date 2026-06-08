@@ -8,13 +8,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Nails Admin">
-  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v7">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v7">
+  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v9">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v9">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v7">
-  <script src="assets/jsQR.js?v=einnyadnails-v7"></script>
-  <script src="assets/config.js?v=einnyadnails-v7"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v7" defer></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v9">
+  <script src="assets/jsQR.js?v=einnyadnails-v9"></script>
+  <script src="assets/config.js?v=einnyadnails-v9"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v9" defer></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -60,9 +60,25 @@
 
       <section id="panel-dashboard" class="panel active section">
         <div id="dashboardCards" class="admin-grid"></div>
-        <div class="card" style="margin-top:18px;">
-          <h2>Próxima cita</h2>
-          <div id="nextAppointment" class="section-sub">Sin cita activa.</div>
+        <div class="dashboard-stack">
+          <div class="card">
+            <h2>Agenda de esta semana</h2>
+            <div id="calendarWeek" class="calendar-week"></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="card">
+              <h2>Próxima cita</h2>
+              <div id="nextAppointment" class="section-sub">Sin cita activa.</div>
+            </div>
+            <div class="card">
+              <h2>Última orden</h2>
+              <div id="lastAppointment" class="section-sub">Sin orden todavía.</div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Servicios más pedidos</h2>
+            <div id="topServices" class="top-services"></div>
+          </div>
         </div>
       </section>
 
@@ -132,6 +148,20 @@
             <div id="servicesList" class="grid"></div>
           </div>
         </div>
+        <div class="card photo-storage-card">
+          <div class="section-head compact">
+            <div>
+              <h2>Almacenamiento de fotos</h2>
+              <p class="section-sub">Analiza fotos subidas por este admin y borra solo las que ya no estan usadas por servicios.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn secondary" type="button" onclick="loadPhotoStorage()">Analizar</button>
+              <button class="btn danger" type="button" onclick="deleteUnusedPhotos()">Borrar no usadas</button>
+            </div>
+          </div>
+          <div id="photoStorageStatus" class="section-sub">Pendiente de analisis.</div>
+          <div id="photoStorageList" class="photo-storage-list"></div>
+        </div>
       </section>
 
       <section id="panel-reviews" class="panel section">
@@ -154,6 +184,12 @@
             <label class="field"><span>Cargo domicilio opcional</span><input id="cfgTravelFee" type="number" step="0.01"></label>
             <label class="field"><span>Instagram URL</span><input id="cfgInstagram"></label>
             <label class="field"><span>QR activo</span><select id="cfgQrEnabled"><option>Yes</option><option>No</option></select></label>
+            <label class="field"><span>Politica cancelacion ES</span><textarea id="cfgCancellationPolicyEs"></textarea></label>
+            <label class="field"><span>Politica cancelacion FR-CA</span><textarea id="cfgCancellationPolicyFr"></textarea></label>
+            <label class="field"><span>Politica deposito ES</span><textarea id="cfgDepositPolicyEs"></textarea></label>
+            <label class="field"><span>Politica deposito FR-CA</span><textarea id="cfgDepositPolicyFr"></textarea></label>
+            <div class="split"><label class="field"><span>Recordatorios activos</span><select id="cfgRemindersEnabled"><option>Yes</option><option>No</option></select></label><label class="field"><span>Horas antes</span><input id="cfgReminderHoursBefore" type="number" min="1" max="168" step="1"></label></div>
+            <div class="toolbar"><button class="btn secondary" type="button" onclick="sendRemindersNow()">Enviar recordatorios ahora</button><button class="btn secondary" type="button" onclick="setupReminderTrigger()">Activar trigger diario</button></div>
             <button class="btn full" type="submit">Guardar ajustes</button>
           </form>
           <form class="card" onsubmit="savePayments(event)">
@@ -219,6 +255,41 @@
         <button id="confirmYes" class="btn danger" type="button" onclick="resolveConfirm(true)">Confirmar</button>
       </div>
     </div>
+  </div>
+  <div id="appointmentModal" class="modal">
+    <form class="modal-card" onsubmit="saveAppointmentEdit(event)">
+      <div class="section-head compact">
+        <div>
+          <span class="badge green">Orden</span>
+          <h2 id="appointmentModalTitle">Editar cita</h2>
+          <p id="appointmentModalSub" class="section-sub"></p>
+        </div>
+        <button class="btn secondary" type="button" onclick="closeAppointmentModal()">Cerrar</button>
+      </div>
+      <input id="editAppointmentId" type="hidden">
+      <div class="grid grid-2">
+        <label class="field"><span>Nombre clienta</span><input id="editCustomerName" required></label>
+        <label class="field"><span>Telefono</span><input id="editCustomerPhone" required></label>
+        <label class="field"><span>Email</span><input id="editCustomerEmail" type="email"></label>
+        <label class="field"><span>Direccion</span><input id="editCustomerAddress" required></label>
+        <label class="field"><span>Fecha</span><input id="editPreferredDate" type="date" required></label>
+        <label class="field"><span>Hora</span><input id="editPreferredTime" type="time" required></label>
+        <label class="field"><span>Estado</span><select id="editStatus"><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select></label>
+        <label class="field"><span>Estado de pago</span><input id="editPaymentStatus"></label>
+        <label class="field"><span>Metodo de pago</span><input id="editPaymentMethod"></label>
+        <label class="field"><span>Cargo domicilio</span><input id="editTravelFee" type="number" min="0" step="0.01"></label>
+        <label class="field"><span>Propina</span><input id="editTip" type="number" min="0" step="0.01"></label>
+        <label class="field"><span>Total actual</span><input id="editTotalPreview" disabled></label>
+      </div>
+      <label class="field" style="margin-top:12px;"><span>Notas admin</span><textarea id="editAdminNotes"></textarea></label>
+      <label class="field"><span>Notas clienta</span><textarea id="editCustomerNotes"></textarea></label>
+      <div id="editAppointmentStatus" class="section-sub"></div>
+      <div class="toolbar" style="justify-content:flex-end;margin-top:16px;">
+        <button class="btn secondary" type="button" onclick="resendReceiptFromModal()">Reenviar recibo</button>
+        <button class="btn danger" type="button" onclick="cancelAppointmentFromModal()">Cancelar cita</button>
+        <button id="editAppointmentBtn" class="btn" type="submit">Guardar cambios</button>
+      </div>
+    </form>
   </div>
   <div id="toast" class="toast"></div>
 
@@ -335,24 +406,133 @@
         ['Citas activas', d.activeCount || 0],
         ['Citas hoy', d.todayCount || 0],
         ['Completadas', d.completedCount || 0],
-        ['Vendido', RTApi.money(d.totalSold || 0)],
-        ['Reviews pendientes', d.pendingReviews || 0]
+        ['Vendido total', RTApi.money(d.totalSold || 0)],
+        ['Vendido este mes', RTApi.money(d.monthSold || 0)],
+        ['Pendiente activo', RTApi.money(d.pendingMoney || 0)],
+        ['Ticket promedio', RTApi.money(d.averageTicket || 0)],
+        ['Testimonios pendientes', d.pendingReviews || 0]
       ].map(function(item){ return '<article class="metric-card"><span>' + item[0] + '</span><strong>' + item[1] + '</strong></article>'; }).join('');
       var next = d.nextAppointment;
-      $('nextAppointment').innerHTML = next ? '<strong>' + RTApi.esc(next.customerName) + '</strong><br>' + RTApi.esc(next.preferredDate + ' ' + next.preferredTime) + '<br>' + RTApi.esc(next.customerAddress) : 'Sin cita activa.';
+      var last = d.lastAppointment;
+      $('nextAppointment').innerHTML = next ? renderAppointmentSummary(next) : 'Sin cita activa.';
+      $('lastAppointment').innerHTML = last ? renderAppointmentSummary(last) : 'Sin orden todavía.';
+      $('topServices').innerHTML = (d.topServices || []).map(function(item){
+        return '<div class="top-service-line"><strong>' + RTApi.esc(item.name) + '</strong><span>' + RTApi.esc(item.count) + '</span></div>';
+      }).join('') || '<div class="empty">Aun no hay datos suficientes.</div>';
+      renderCalendarWeek();
+    }
+    function renderAppointmentSummary(item){
+      return '<strong>' + RTApi.esc(item.customerName || '') + '</strong><br>' + RTApi.esc((item.preferredDate || '') + ' ' + (item.preferredTime || '')) + '<br><span class="section-sub">' + RTApi.esc(item.status || '') + ' | ' + RTApi.money(item.totalUpdated || item.total || 0) + '</span><br><span class="section-sub">' + RTApi.esc(item.customerAddress || '') + '</span>';
+    }
+    function renderCalendarWeek(){
+      var appointments = adminData.appointments || [];
+      var today = new Date();
+      today.setHours(12,0,0,0);
+      var days = [];
+      for(var i = 0; i < 7; i++){
+        var date = new Date(today.getTime() + i * 86400000);
+        var iso = date.toISOString().slice(0, 10);
+        var label = date.toLocaleDateString('es-ES', { weekday:'short', day:'numeric' });
+        var items = appointments.filter(function(item){ return item.preferredDate === iso; }).sort(function(a, b){ return String(a.preferredTime).localeCompare(String(b.preferredTime)); });
+        days.push('<article class="calendar-day"><strong>' + RTApi.esc(label) + '</strong><span>' + RTApi.esc(iso) + '</span><div>' + (items.map(function(item){ return '<button type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')" class="calendar-event ' + (String(item.status).toLowerCase().indexOf('cancel') !== -1 ? 'is-cancelled' : '') + '"><b>' + RTApi.esc(item.preferredTime || '') + '</b> ' + RTApi.esc(item.customerName || '') + '<small>' + RTApi.esc(item.status || '') + '</small></button>'; }).join('') || '<em>Libre</em>') + '</div></article>');
+      }
+      $('calendarWeek').innerHTML = days.join('');
     }
     function renderAppointments(){
       var list = adminData.appointments || [];
       if(!list.length){ $('appointmentsTable').innerHTML = '<div class="empty">No hay citas todavía.</div>'; return; }
       $('appointmentsTable').innerHTML = '<table><thead><tr><th>Cita</th><th>Clienta</th><th>Servicios</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function(item){
         var services = (item.items || []).map(function(row){ return (row.quantity || 1) + 'x ' + (row.nameEs || row.name); }).join('<br>');
-        return '<tr><td><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td>' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td>' + services + '</td><td>' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + '</td><td>' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span></td><td><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">Abrir QR</button></td></tr>';
+        return '<tr><td><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td>' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td>' + services + '</td><td>' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + '</td><td>' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span></td><td><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td><div class="table-actions"><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Editar</button><button class="btn secondary" type="button" onclick="resendReceipt(\'' + RTApi.esc(item.appointmentId) + '\')">Recibo</button><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">QR</button><button class="btn danger" type="button" onclick="cancelAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Cancelar</button></div></td></tr>';
       }).join('') + '</tbody></table>';
     }
     async function updateStatus(id, status){
       if(!status) return;
       try { await adminCall('updateAppointmentStatus', { appointmentId:id, status:status }); await refreshAll(); }
       catch(error){ toast(error.message || String(error)); }
+    }
+    function editAppointment(id){
+      var item = (adminData.appointments || []).find(function(row){ return String(row.appointmentId) === String(id); });
+      if(!item) return toast('Cita no encontrada.');
+      $('editAppointmentId').value = item.appointmentId;
+      $('appointmentModalTitle').textContent = 'Editar ' + item.appointmentId;
+      $('appointmentModalSub').textContent = (item.items || []).map(function(row){ return (row.quantity || 1) + 'x ' + (row.nameEs || row.name); }).join(', ');
+      $('editCustomerName').value = item.customerName || '';
+      $('editCustomerPhone').value = item.customerPhone || '';
+      $('editCustomerEmail').value = item.customerEmail || '';
+      $('editCustomerAddress').value = item.customerAddress || '';
+      $('editPreferredDate').value = item.preferredDate || '';
+      $('editPreferredTime').value = item.preferredTime || '';
+      $('editStatus').value = item.status || 'Pending';
+      $('editPaymentStatus').value = item.paymentStatus || '';
+      $('editPaymentMethod').value = item.paymentMethod || '';
+      $('editTravelFee').value = item.travelFee || 0;
+      $('editTip').value = item.tip || 0;
+      $('editTotalPreview').value = RTApi.money(item.totalUpdated || item.total || 0);
+      $('editAdminNotes').value = item.adminNotes || '';
+      $('editCustomerNotes').value = item.customerNotes || '';
+      $('editAppointmentStatus').textContent = '';
+      $('appointmentModal').classList.add('open');
+    }
+    function closeAppointmentModal(){
+      $('appointmentModal').classList.remove('open');
+    }
+    async function saveAppointmentEdit(event){
+      event.preventDefault();
+      var id = $('editAppointmentId').value;
+      var payload = {
+        appointmentId:id,
+        appointment:{
+          customerName:$('editCustomerName').value,
+          customerPhone:$('editCustomerPhone').value,
+          customerEmail:$('editCustomerEmail').value,
+          customerAddress:$('editCustomerAddress').value,
+          preferredDate:$('editPreferredDate').value,
+          preferredTime:$('editPreferredTime').value,
+          status:$('editStatus').value,
+          paymentStatus:$('editPaymentStatus').value,
+          paymentMethod:$('editPaymentMethod').value,
+          travelFee:$('editTravelFee').value,
+          tip:$('editTip').value,
+          adminNotes:$('editAdminNotes').value,
+          customerNotes:$('editCustomerNotes').value
+        }
+      };
+      $('editAppointmentBtn').disabled = true;
+      $('editAppointmentStatus').innerHTML = '<span class="loading-inline"></span>Guardando cambios...';
+      try {
+        var updated = await adminCall('updateAppointment', payload);
+        $('editTotalPreview').value = RTApi.money(updated.totalUpdated || updated.total || 0);
+        closeAppointmentModal();
+        await refreshAll();
+        toast('Cita actualizada');
+      } catch(error) {
+        $('editAppointmentStatus').textContent = error.message || String(error);
+      } finally {
+        $('editAppointmentBtn').disabled = false;
+      }
+    }
+    async function cancelAppointment(id){
+      var ok = await confirmAction('Cancelar cita', 'La cita quedara cancelada y el QR se desactivara.');
+      if(!ok) return;
+      try { await adminCall('cancelAppointment', { appointmentId:id, reason:'Cancelada desde admin' }); await refreshAll(); toast('Cita cancelada'); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    async function cancelAppointmentFromModal(){
+      var id = $('editAppointmentId').value;
+      if(!id) return;
+      await cancelAppointment(id);
+      closeAppointmentModal();
+    }
+    async function resendReceipt(id){
+      var ok = await confirmAction('Reenviar recibo', 'Se enviara el recibo actualizado a la clienta y a la duena.');
+      if(!ok) return;
+      try { await adminCall('resendAppointmentReceipt', { appointmentId:id }); toast('Recibo enviado'); }
+      catch(error){ toast(error.message || String(error)); }
+    }
+    async function resendReceiptFromModal(){
+      var id = $('editAppointmentId').value;
+      if(id) await resendReceipt(id);
     }
     function openQrFromAppointment(id, token){
       $('qrText').value = 'ENAIL|' + id + '|' + token;
@@ -408,6 +588,34 @@
       catch(error){ toast(error.message || String(error)); }
     }
     async function toggleService(id){ try { await adminCall('toggleService', { id:id }); await refreshAll(); } catch(error){ toast(error.message || String(error)); } }
+    async function loadPhotoStorage(){
+      $('photoStorageStatus').innerHTML = '<span class="loading-inline"></span>Analizando fotos...';
+      try {
+        var data = await adminCall('getPhotoStorage', {});
+        renderPhotoStorage(data);
+      } catch(error) {
+        $('photoStorageStatus').textContent = error.message || String(error);
+      }
+    }
+    function renderPhotoStorage(data){
+      var photos = data.photos || [];
+      $('photoStorageStatus').textContent = 'Total registrado: ' + (data.totalLabel || '0 B') + ' | No usado: ' + (data.unusedLabel || '0 B') + ' | Fotos no usadas: ' + (data.unusedCount || 0);
+      $('photoStorageList').innerHTML = photos.map(function(photo){
+        return '<div class="photo-storage-line ' + (photo.used ? 'is-used' : 'is-unused') + '"><div><strong>' + RTApi.esc(photo.fileName || photo.fileId) + '</strong><br><span class="section-sub">' + RTApi.esc(photo.source || '') + ' | ' + RTApi.esc(photo.sizeLabel || '') + ' | ' + RTApi.esc(photo.used ? 'En uso' : 'No usada') + '</span></div>' + (photo.url ? '<a class="btn secondary" href="' + RTApi.esc(photo.url) + '" target="_blank" rel="noopener">Ver</a>' : '') + '</div>';
+      }).join('') || '<div class="empty">No hay fotos registradas todavia.</div>';
+    }
+    async function deleteUnusedPhotos(){
+      var ok = await confirmAction('Borrar fotos no usadas', 'Solo se enviaran a la papelera de Drive fotos registradas por este admin y que ya no esten usadas en servicios.');
+      if(!ok) return;
+      $('photoStorageStatus').innerHTML = '<span class="loading-inline"></span>Borrando fotos no usadas...';
+      try {
+        var result = await adminCall('deleteUnusedPhotos', {});
+        renderPhotoStorage(result.storage || {});
+        toast('Fotos borradas: ' + ((result.deleted || []).length));
+      } catch(error) {
+        $('photoStorageStatus').textContent = error.message || String(error);
+      }
+    }
     function setPreview(id, url){
       var image = $(id);
       if(!image) return;
@@ -605,6 +813,12 @@
       $('cfgTravelFee').value = c.travelFee || 0;
       $('cfgInstagram').value = c.instagramUrl || '';
       $('cfgQrEnabled').value = c.qrEnabled || 'Yes';
+      $('cfgCancellationPolicyEs').value = c.cancellationPolicyEs || '';
+      $('cfgCancellationPolicyFr').value = c.cancellationPolicyFr || '';
+      $('cfgDepositPolicyEs').value = c.depositPolicyEs || '';
+      $('cfgDepositPolicyFr').value = c.depositPolicyFr || '';
+      $('cfgRemindersEnabled').value = c.remindersEnabled || 'Yes';
+      $('cfgReminderHoursBefore').value = c.reminderHoursBefore || 24;
     }
     function fillPayments(){
       var p = adminData.payments || {};
@@ -618,9 +832,21 @@
     }
     async function saveSettings(event){
       event.preventDefault();
-      var config = { name:$('cfgName').value, ownerName:$('cfgOwnerName').value, phone:$('cfgPhone').value, email:$('cfgEmail').value, ownerEmail:$('cfgEmail').value, serviceArea:$('cfgServiceArea').value, address:$('cfgServiceArea').value, aboutText:$('cfgAboutText').value, taxRate:0, travelFee:$('cfgTravelFee').value, instagramUrl:$('cfgInstagram').value, qrEnabled:$('cfgQrEnabled').value };
+      var config = { name:$('cfgName').value, ownerName:$('cfgOwnerName').value, phone:$('cfgPhone').value, email:$('cfgEmail').value, ownerEmail:$('cfgEmail').value, serviceArea:$('cfgServiceArea').value, address:$('cfgServiceArea').value, aboutText:$('cfgAboutText').value, taxRate:0, travelFee:$('cfgTravelFee').value, instagramUrl:$('cfgInstagram').value, qrEnabled:$('cfgQrEnabled').value, cancellationPolicyEs:$('cfgCancellationPolicyEs').value, cancellationPolicyFr:$('cfgCancellationPolicyFr').value, depositPolicyEs:$('cfgDepositPolicyEs').value, depositPolicyFr:$('cfgDepositPolicyFr').value, remindersEnabled:$('cfgRemindersEnabled').value, reminderHoursBefore:$('cfgReminderHoursBefore').value };
       try { await adminCall('saveSalonConfig', { config:config }); await refreshAll(); }
       catch(error){ toast(error.message || String(error)); }
+    }
+    async function sendRemindersNow(){
+      try {
+        var result = await adminCall('sendRemindersNow', { hoursBefore:$('cfgReminderHoursBefore').value });
+        toast('Recordatorios enviados: ' + ((result.sent || []).length));
+      } catch(error){ toast(error.message || String(error)); }
+    }
+    async function setupReminderTrigger(){
+      try {
+        var result = await adminCall('setupReminderTrigger', {});
+        toast(result.installed ? 'Trigger diario activado' : 'No se pudo activar');
+      } catch(error){ toast(error.message || String(error)); }
     }
     async function savePayments(event){
       event.preventDefault();
@@ -659,7 +885,10 @@
       var extras = item.extras || [];
       var servicesOptions = (adminData.services || []).filter(function(service){ return service.visible !== false; }).map(function(service){ return '<option value="' + RTApi.esc(service.id) + '" data-price="' + RTApi.esc(service.price) + '">' + RTApi.esc(service.category + ' - ' + service.name) + ' - ' + RTApi.money(service.price) + '</option>'; }).join('');
       var extrasHtml = extras.length ? '<div class="extras-list">' + extras.map(function(extra){ return '<div class="extra-row"><div><strong>' + RTApi.esc(extra.name) + '</strong><br><span class="section-sub">' + RTApi.money(extra.price) + ' | ' + RTApi.esc(extra.notes || extra.paymentMethod || '') + '</span></div>' + (receiptOnly ? '' : '<button class="btn danger" type="button" onclick="removeExtra(\'' + RTApi.esc(extra.extraId) + '\')">Remover</button>') + '</div>'; }).join('') + '</div>' : '<div class="empty">No hay extras agregados.</div>';
-      $('qrResult').innerHTML = '<div><span class="badge ' + (receiptOnly ? 'dark' : 'green') + '">' + RTApi.esc(receiptOnly ? 'Recibo final' : (item.qrStatus || 'Active')) + '</span><h2>' + RTApi.esc(item.appointmentId) + '</h2><p><strong>' + RTApi.esc(item.customerName) + '</strong><br>' + RTApi.esc(item.customerPhone) + '<br>' + RTApi.esc(item.customerAddress) + '</p><p class="section-sub">' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + ' | Estado: ' + RTApi.esc(item.status) + '</p><div class="admin-grid"><div class="metric-card"><span>Total actual</span><strong>' + RTApi.money(item.totalUpdated || item.total) + '</strong></div><div class="metric-card"><span>Extras</span><strong>' + RTApi.money(item.extraTotal || 0) + '</strong></div></div><div class="toolbar" style="margin:14px 0;">' + (receiptOnly ? '' : '<button class="btn secondary" type="button" onclick="updateQrStage(\'Client arrived\')">Clienta llegó</button><button class="btn secondary" type="button" onclick="updateQrStage(\'In service\')">En servicio</button><button class="btn success" type="button" onclick="finishAppointment()">Finalizar cita</button>') + '</div><h3>Servicios extras</h3>' + extrasHtml + (receiptOnly ? '' : '<div class="card" style="box-shadow:none;margin-top:12px;"><label class="field"><span>Servicio extra activo</span><select id="extraService" onchange="fillExtraFromService()"><option value="manual">Manual</option>' + servicesOptions + '</select></label><label class="field"><span>Nombre extra</span><input id="extraName"></label><label class="field"><span>Precio</span><input id="extraPrice" type="number" min="0" step="0.01" value="0"></label><label class="field"><span>Notas</span><textarea id="extraNotes"></textarea></label><button class="btn full" type="button" onclick="addExtra()">Agregar extra al recibo</button></div>') + '</div>';
+      var extrasForm = receiptOnly ? '' : '<div class="card" style="box-shadow:none;margin-top:12px;"><label class="field"><span>Servicio extra activo</span><select id="extraService" onchange="fillExtraFromService()"><option value="manual">Manual</option>' + servicesOptions + '</select></label><label class="field"><span>Nombre extra</span><input id="extraName"></label><label class="field"><span>Precio</span><input id="extraPrice" type="number" min="0" step="0.01" value="0"></label><label class="field"><span>Notas</span><textarea id="extraNotes"></textarea></label><button class="btn full" type="button" onclick="addExtra()">Agregar extra al recibo</button></div>';
+      var logsHtml = (item.qrLogs || []).map(function(log){ return '<div class="qr-log-line"><strong>' + RTApi.esc(log.action || '') + '</strong><span>' + RTApi.esc(log.timestamp || '') + '</span><p>' + RTApi.esc(log.notes || '') + '</p></div>'; }).join('') || '<div class="empty">Sin historial QR todavia.</div>';
+      var actions = receiptOnly ? '' : '<button class="btn secondary" type="button" onclick="updateQrStage(\'Client arrived\')">Clienta llegó</button><button class="btn secondary" type="button" onclick="updateQrStage(\'In service\')">En servicio</button><button class="btn success" type="button" onclick="finishAppointment()">Finalizar cita</button>';
+      $('qrResult').innerHTML = '<div><span class="badge ' + (receiptOnly ? 'dark' : 'green') + '">' + RTApi.esc(receiptOnly ? 'Recibo final' : (item.qrStatus || 'Active')) + '</span><h2>' + RTApi.esc(item.appointmentId) + '</h2><p><strong>' + RTApi.esc(item.customerName) + '</strong><br>' + RTApi.esc(item.customerPhone) + '<br>' + RTApi.esc(item.customerAddress) + '</p><p class="section-sub">' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + ' | Estado: ' + RTApi.esc(item.status) + '</p><div class="admin-grid"><div class="metric-card"><span>Total actual</span><strong>' + RTApi.money(item.totalUpdated || item.total) + '</strong></div><div class="metric-card"><span>Extras</span><strong>' + RTApi.money(item.extraTotal || 0) + '</strong></div></div><div class="toolbar" style="margin:14px 0;">' + actions + '</div><h3>Servicios extras</h3>' + extrasHtml + extrasForm + '<h3>Historial QR</h3><div class="qr-log-list">' + logsHtml + '</div></div>';
     }
     function fillExtraFromService(){
       var select = $('extraService');
