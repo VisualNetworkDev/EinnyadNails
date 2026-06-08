@@ -285,6 +285,10 @@ img { max-width: 100%; display: block; }
 .qty button { width:32px; height:32px; border-radius:999px; border:1px solid var(--line); background:#fff; }
 .field { display:grid; gap:7px; font-weight:850; color:var(--ink); }
 .field span, .field label { font-size:13px; color:var(--muted); }
+.check-field { align-content:start; grid-template-columns:auto 1fr; align-items:center; column-gap:10px; row-gap:4px; }
+.check-field span { grid-column:1 / -1; }
+.check-field input[type="checkbox"] { width:20px; height:20px; padding:0; accent-color:var(--brand); }
+.check-field small { color:var(--muted); line-height:1.35; }
 input, textarea, select {
   width:100%;
   border:1px solid var(--line);
