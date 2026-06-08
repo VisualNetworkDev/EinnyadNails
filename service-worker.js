@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'einnyadnails-pwa-v7';
+const CACHE_VERSION = 'einnyadnails-pwa-v3';
 const CORE_ASSETS = [
   './index.html',
   './admin.html',
@@ -8,6 +8,7 @@ const CORE_ASSETS = [
   './assets/config.js',
   './assets/nails.css',
   './assets/pwa.js',
+  './assets/app-intro.js',
   './assets/jsQR.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
