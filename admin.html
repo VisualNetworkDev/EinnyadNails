@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
+  <!-- FIX v7: admin sin pantalla de carga y sin auto-session vieja -->
   <meta name="theme-color" content="#2d131e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -226,7 +227,8 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    var sessionToken = localStorage.getItem('en_admin_session') || '';
+    localStorage.removeItem('en_admin_session');
+    var sessionToken = '';
     var adminData = {};
     var currentUser = null;
     var qrStream = null;
@@ -760,7 +762,10 @@
       confirmResolver = null;
     }
 
-    if(sessionToken) bootstrap();
+    localStorage.removeItem('en_admin_session');
+    sessionToken = '';
+    if($('loginScreen')) $('loginScreen').classList.remove('hidden');
+    if($('adminApp')) $('adminApp').classList.add('hidden');
   </script>
 </body>
 </html>
