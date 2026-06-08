@@ -8,13 +8,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="EinnyadNails">
-  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v7">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v7">
+  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v9">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v9">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v7">
-  <script src="assets/config.js?v=einnyadnails-v7"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v7" defer></script>
-  <script src="assets/app-intro.js?v=einnyadnails-v7"></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v9">
+  <script src="assets/config.js?v=einnyadnails-v9"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v9" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v9"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
@@ -182,6 +182,7 @@
           </div>
           <label class="field"><span data-i18n="tip">Propina</span><input id="tip" type="number" min="0" step="0.01" value="0" oninput="renderCart()"></label>
           <label class="field"><span data-i18n="notes">Notas</span><textarea id="notes"></textarea></label>
+          <div id="policyBox" class="policy-box"></div>
           <label class="field" style="display:flex; align-items:flex-start; gap:10px;"><input id="agree" type="checkbox" style="width:auto; margin-top:4px;"><span id="agreementCopy"></span></label>
           <button id="placeBtn" class="btn full" type="button" onclick="placeAppointment()" data-i18n="placeAppointment">Reservar cita</button>
         </div>
@@ -291,6 +292,7 @@
       $('langLabel').textContent = currentLang === 'es' ? 'FR' : 'ES';
       document.querySelectorAll('[data-i18n]').forEach(function(node){ node.textContent = t(node.getAttribute('data-i18n')); });
       $('agreementCopy').textContent = currentLang === 'fr' ? (cfg.agreementTextFr || cfg.agreementText || '') : (cfg.agreementTextEs || cfg.agreementText || '');
+      renderPolicyBox();
       renderCats();
       renderServices();
       renderBeforeAfter();
@@ -365,6 +367,16 @@
       if(cfg.instagramUrl){ $('igLine').style.display = ''; $('igLine').href = cfg.instagramUrl; }
       setLanguage(currentLang);
     }
+    function renderPolicyBox(){
+      if(!$('policyBox')) return;
+      var fallbackCancelEs = 'Puedes solicitar cambios o cancelacion con al menos 24 horas de anticipacion. Si la tecnica ya esta en camino, puede aplicar cargo de desplazamiento.';
+      var fallbackDepositEs = 'Si se activa deposito o pago online, la cita queda confirmada cuando el pago sea validado.';
+      var fallbackCancelFr = 'Vous pouvez demander un changement ou une annulation au moins 24 heures a l avance.';
+      var fallbackDepositFr = 'Si un depot ou paiement en ligne est active, le rendez-vous est confirme lorsque le paiement est valide.';
+      var cancellation = currentLang === 'fr' ? (cfg.cancellationPolicyFr || cfg.cancellationPolicyEs || fallbackCancelFr) : (cfg.cancellationPolicyEs || fallbackCancelEs);
+      var deposit = currentLang === 'fr' ? (cfg.depositPolicyFr || cfg.depositPolicyEs || fallbackDepositFr) : (cfg.depositPolicyEs || fallbackDepositEs);
+      $('policyBox').innerHTML = '<strong>' + (currentLang === 'fr' ? 'Conditions de rendez-vous' : 'Politicas de la cita') + '</strong>' + (cancellation ? '<p>' + RTApi.esc(cancellation) + '</p>' : '') + (deposit ? '<p>' + RTApi.esc(deposit) + '</p>' : '');
+    }
 
     function showSection(name, button){
       document.querySelectorAll('.client-section').forEach(function(section){ section.classList.remove('active'); });
@@ -395,7 +407,7 @@
         var image = item.image || 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80';
         var selectedQty = cart[item.id] || 0;
         var actionLabel = selectedQty ? (t('add') + ' +' + selectedQty) : t('add');
-        return '<article class="card service-card ' + (selectedQty ? 'selected' : '') + '"><div class="service-img" style="background-image:url(' + RTApi.esc(image) + ')"></div>' + (selectedQty ? '<span class="selected-badge">' + RTApi.esc(t('selected')) + '</span>' : '') + '<div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + RTApi.esc(actionLabel) + '</button></div></div></article>';
+        return '<article class="card service-card ' + (selectedQty ? 'selected' : '') + '"><div class="service-img"><img src="' + RTApi.esc(image) + '" alt="' + RTApi.esc(item.name || 'Servicio') + '" loading="lazy" decoding="async"></div>' + (selectedQty ? '<span class="selected-badge">' + RTApi.esc(t('selected')) + '</span>' : '') + '<div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + RTApi.esc(actionLabel) + '</button></div></div></article>';
       }).join('') || '<div class="empty">' + t('emptyServices') + '</div>';
     }
     function renderBeforeAfter(){
@@ -404,7 +416,7 @@
       if(!section) return;
       section.style.display = pairs.length ? '' : 'none';
       $('beforeAfterGrid').innerHTML = pairs.map(function(item){
-        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes"><figcaption>Antes</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="Después"><figcaption>Después</figcaption></figure></div></article>';
+        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes" loading="lazy" decoding="async"><figcaption>Antes</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="Después" loading="lazy" decoding="async"><figcaption>Después</figcaption></figure></div></article>';
       }).join('');
     }
     function renderOffers(){
