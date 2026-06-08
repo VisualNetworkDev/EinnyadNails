@@ -8,24 +8,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Nails Admin">
-  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v3">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v3">
+  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v7">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v7">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v3">
-  <script src="assets/jsQR.js?v=einnyadnails-v3"></script>
-  <script src="assets/config.js?v=einnyadnails-v3"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
-  <script src="assets/app-intro.js?v=einnyadnails-v3"></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v7">
+  <script src="assets/jsQR.js?v=einnyadnails-v7"></script>
+  <script src="assets/config.js?v=einnyadnails-v7"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v7" defer></script>
 </head>
 <body>
-  <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="18000" role="status" aria-live="polite">
-    <div class="intro-card">
-      <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Panel de dueña</small></span></div>
-      <div class="intro-main"><div class="intro-plate"></div><h2>Abriendo admin</h2><p>Preparando citas, servicios, QR, pagos y reseñas.</p></div>
-      <div class="intro-status"><span id="appIntroStep">Verificando sesión...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
-    </div>
-  </div>
-
   <section id="loginScreen" class="login-screen">
     <div class="login-box">
       <div class="intro-brand" style="justify-content:flex-start;color:var(--ink);">
@@ -60,14 +51,11 @@
 
       <div class="admin-tabs">
         <button class="active" data-panel="dashboard" onclick="showPanel('dashboard', this)">Dashboard</button>
-        <button data-panel="appointments" onclick="showPanel('appointments', this)">Citas</button>
-        <button data-panel="availability" onclick="showPanel('availability', this)">Horarios</button>
-        <button data-panel="qr" onclick="showPanel('qr', this)">QR cita</button>
+        <button data-panel="appointments" onclick="showPanel('appointments', this)">Ordenes</button>
         <button data-panel="services" onclick="showPanel('services', this)">Servicios</button>
-        <button data-panel="promos" onclick="showPanel('promos', this)">Promos</button>
-        <button data-panel="reviews" onclick="showPanel('reviews', this)">Reseñas</button>
+        <button data-panel="qr" onclick="showPanel('qr', this)">QR</button>
+        <button data-panel="reviews" onclick="showPanel('reviews', this)">Testimonios</button>
         <button data-panel="settings" onclick="showPanel('settings', this)">Ajustes</button>
-        <button data-panel="logs" onclick="showPanel('logs', this)">Logs</button>
       </div>
 
       <section id="panel-dashboard" class="panel active section">
@@ -80,34 +68,10 @@
 
       <section id="panel-appointments" class="panel section">
         <div class="section-head">
-          <div><h2 class="section-title">Citas</h2><p class="section-sub">Todas las reservas llegan aquí y también al correo configurado.</p></div>
+          <div><h2 class="section-title">Ordenes</h2><p class="section-sub">Todas las reservas llegan aqui y tambien al correo configurado.</p></div>
           <button class="btn" type="button" onclick="refreshAll()">Actualizar</button>
         </div>
         <div id="appointmentsTable" class="table-wrap"></div>
-      </section>
-
-      <section id="panel-availability" class="panel section">
-        <div class="section-head">
-          <div><h2 class="section-title">Horarios y bloqueos</h2><p class="section-sub">Controla cuándo se pueden crear citas. El cliente solo verá horas disponibles.</p></div>
-          <button class="btn" type="button" onclick="saveHours()">Guardar horarios</button>
-        </div>
-        <div class="grid grid-2">
-          <div class="card">
-            <h2>Horas disponibles</h2>
-            <div id="hoursEditor" class="hours-editor"></div>
-          </div>
-          <form class="card" onsubmit="saveBlock(event)">
-            <h2>Bloquear día u hora</h2>
-            <label class="field"><span>Fecha</span><input id="blockDate" type="date" required></label>
-            <div class="split"><label class="field"><span>Desde</span><input id="blockStart" type="time" required></label><label class="field"><span>Hasta</span><input id="blockEnd" type="time" required></label></div>
-            <label class="field"><span>Motivo</span><input id="blockReason" placeholder="Cita personal, descanso, evento..."></label>
-            <button class="btn full" type="submit">Guardar bloqueo</button>
-          </form>
-        </div>
-        <div class="card" style="margin-top:18px;">
-          <h2>Bloqueos activos</h2>
-          <div id="blocksList" class="grid"></div>
-        </div>
       </section>
 
       <section id="panel-qr" class="panel section">
@@ -139,19 +103,25 @@
             <h2>Servicio</h2>
             <input id="serviceRow" type="hidden">
             <input id="serviceId" type="hidden">
-            <div class="split"><label class="field"><span>Categoria</span><input id="serviceCategory" required></label><label class="field"><span>Orden</span><input id="serviceOrder" type="number" min="1" step="1" value="1"></label></div>
-            <label class="field"><span>Nombre ES</span><input id="serviceName" required></label>
-            <label class="field"><span>Nombre FR-CA</span><input id="serviceNameFr"></label>
-            <label class="field"><span>Descripción ES</span><textarea id="serviceDescription"></textarea></label>
-            <label class="field"><span>Descripción FR-CA</span><textarea id="serviceDescriptionFr"></textarea></label>
-            <div class="split"><label class="field"><span>Precio CAD</span><input id="servicePrice" type="number" min="0" step="0.01" required></label><label class="field"><span>Duracion min</span><input id="serviceDuration" type="number" min="15" step="5" value="60"></label></div>
+            <div class="service-form-section">
+              <div class="mini-section-head"><strong>Datos del servicio</strong><span>Nombre, precio, duracion y descripcion.</span></div>
+              <div class="split"><label class="field"><span>Categoria</span><input id="serviceCategory" required></label><label class="field"><span>Orden</span><input id="serviceOrder" type="number" min="1" step="1" value="1"></label></div>
+              <label class="field"><span>Nombre ES</span><input id="serviceName" required></label>
+              <label class="field"><span>Nombre FR-CA</span><input id="serviceNameFr"></label>
+              <label class="field"><span>Descripcion ES</span><textarea id="serviceDescription"></textarea></label>
+              <label class="field"><span>Descripcion FR-CA</span><textarea id="serviceDescriptionFr"></textarea></label>
+              <div class="split"><label class="field"><span>Precio CAD</span><input id="servicePrice" type="number" min="0" step="0.01" required></label><label class="field"><span>Duracion min</span><input id="serviceDuration" type="number" min="15" step="5" value="60"></label></div>
+            </div>
             <input id="serviceImage" type="hidden">
             <input id="serviceBeforeImage" type="hidden">
             <input id="serviceAfterImage" type="hidden">
-            <div class="photo-upload-grid">
-              <label class="field"><span>Foto principal</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceImagePreview')"><img id="serviceImagePreview" class="preview-thumb" alt=""></label>
-              <label class="field"><span>Foto antes</span><input id="serviceBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceBeforePreview')"><img id="serviceBeforePreview" class="preview-thumb" alt=""></label>
-              <label class="field"><span>Foto después</span><input id="serviceAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceAfterPreview')"><img id="serviceAfterPreview" class="preview-thumb" alt=""></label>
+            <div class="service-form-section photo-manager">
+              <div class="mini-section-head"><strong>Fotos y antes/despues</strong><span>Las imagenes se optimizan antes de subir para ahorrar espacio sin perder calidad.</span></div>
+              <div class="photo-upload-grid">
+                <label class="field"><span>Foto principal</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceImagePreview')"><img id="serviceImagePreview" class="preview-thumb" alt=""></label>
+                <label class="field"><span>Foto antes</span><input id="serviceBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceBeforePreview')"><img id="serviceBeforePreview" class="preview-thumb" alt=""></label>
+                <label class="field"><span>Foto despues</span><input id="serviceAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceAfterPreview')"><img id="serviceAfterPreview" class="preview-thumb" alt=""></label>
+              </div>
             </div>
             <div id="serviceUploadStatus" class="section-sub"></div>
             <label class="field"><span>Activo</span><select id="serviceAvailable"><option>Yes</option><option>No</option></select></label>
@@ -164,37 +134,23 @@
         </div>
       </section>
 
-      <section id="panel-promos" class="panel section">
-        <div class="grid grid-2">
-          <form class="card" onsubmit="savePromo(event)">
-            <h2>Promocion</h2>
-            <label class="field"><span>Codigo</span><input id="promoCode" required></label>
-            <label class="field"><span>Titulo ES</span><input id="promoTitle"></label>
-            <label class="field"><span>Titulo FR-CA</span><input id="promoTitleFr"></label>
-            <label class="field"><span>Descripción ES</span><textarea id="promoDescription"></textarea></label>
-            <label class="field"><span>Descripción FR-CA</span><textarea id="promoDescriptionFr"></textarea></label>
-            <div class="split"><label class="field"><span>Tipo</span><select id="promoType"><option>percent</option><option>fixed</option></select></label><label class="field"><span>Valor</span><input id="promoValue" type="number" step="0.01"></label></div>
-            <div class="split"><label class="field"><span>Min subtotal</span><input id="promoMinSubtotal" type="number" step="0.01"></label><label class="field"><span>Activo</span><select id="promoActive"><option>Yes</option><option>No</option></select></label></div>
-            <button class="btn full" type="submit">Guardar promo</button>
-          </form>
-          <div id="promosList" class="grid"></div>
-        </div>
-      </section>
-
       <section id="panel-reviews" class="panel section">
         <div class="section-head"><div><h2 class="section-title">Reseñas</h2><p class="section-sub">Las reseñas llegan desde el index. Aquí solo se aprueban, ocultan o dejan pendientes.</p></div></div>
         <div id="reviewsList" class="grid grid-2"></div>
       </section>
 
       <section id="panel-settings" class="panel section">
-        <div class="grid grid-2">
+        <div class="section-head">
+          <div><h2 class="section-title">Ajustes</h2><p class="section-sub">Configuracion de la duena, pagos, disponibilidad, promociones y registros del sistema.</p></div>
+        </div>
+        <div class="settings-grid">
           <form class="card" onsubmit="saveSettings(event)">
             <h2>Ajustes del negocio</h2>
             <label class="field"><span>Nombre</span><input id="cfgName"></label>
             <label class="field"><span>Duena</span><input id="cfgOwnerName"></label>
-            <div class="split"><label class="field"><span>Teléfono</span><input id="cfgPhone"></label><label class="field"><span>Email recibos</span><input id="cfgEmail" type="email"></label></div>
+            <div class="split"><label class="field"><span>Telefono</span><input id="cfgPhone"></label><label class="field"><span>Email recibos</span><input id="cfgEmail" type="email"></label></div>
             <label class="field"><span>Area de servicio</span><input id="cfgServiceArea"></label>
-            <label class="field"><span>Descripción</span><textarea id="cfgAboutText"></textarea></label>
+            <label class="field"><span>Descripcion</span><textarea id="cfgAboutText"></textarea></label>
             <label class="field"><span>Cargo domicilio opcional</span><input id="cfgTravelFee" type="number" step="0.01"></label>
             <label class="field"><span>Instagram URL</span><input id="cfgInstagram"></label>
             <label class="field"><span>QR activo</span><select id="cfgQrEnabled"><option>Yes</option><option>No</option></select></label>
@@ -211,13 +167,46 @@
             <label class="field"><span>Cash activo</span><select id="payCashEnabled"><option>Yes</option><option>No</option></select></label>
             <button class="btn full" type="submit">Guardar pagos</button>
           </form>
+          <div class="card">
+            <div class="section-head compact">
+              <div><h2>Horarios disponibles</h2><p class="section-sub">El cliente solo puede reservar dentro de estos horarios.</p></div>
+              <button class="btn" type="button" onclick="saveHours()">Guardar</button>
+            </div>
+            <div id="hoursEditor" class="hours-editor"></div>
+          </div>
+          <form class="card" onsubmit="saveBlock(event)">
+            <h2>Bloquear dia u hora</h2>
+            <label class="field"><span>Fecha</span><input id="blockDate" type="date" required></label>
+            <div class="split"><label class="field"><span>Desde</span><input id="blockStart" type="time" required></label><label class="field"><span>Hasta</span><input id="blockEnd" type="time" required></label></div>
+            <label class="field"><span>Motivo</span><input id="blockReason" placeholder="Cita personal, descanso, evento..."></label>
+            <button class="btn full" type="submit">Guardar bloqueo</button>
+          </form>
+          <div class="card">
+            <h2>Bloqueos activos</h2>
+            <div id="blocksList" class="grid"></div>
+          </div>
+          <form class="card" onsubmit="savePromo(event)">
+            <h2>Promocion</h2>
+            <label class="field"><span>Codigo</span><input id="promoCode" required></label>
+            <label class="field"><span>Titulo ES</span><input id="promoTitle"></label>
+            <label class="field"><span>Titulo FR-CA</span><input id="promoTitleFr"></label>
+            <label class="field"><span>Descripcion ES</span><textarea id="promoDescription"></textarea></label>
+            <label class="field"><span>Descripcion FR-CA</span><textarea id="promoDescriptionFr"></textarea></label>
+            <div class="split"><label class="field"><span>Tipo</span><select id="promoType"><option>percent</option><option>fixed</option></select></label><label class="field"><span>Valor</span><input id="promoValue" type="number" step="0.01"></label></div>
+            <div class="split"><label class="field"><span>Min subtotal</span><input id="promoMinSubtotal" type="number" step="0.01"></label><label class="field"><span>Activo</span><select id="promoActive"><option>Yes</option><option>No</option></select></label></div>
+            <button class="btn full" type="submit">Guardar promo</button>
+          </form>
+          <div class="card">
+            <h2>Promos activas</h2>
+            <div id="promosList" class="grid"></div>
+          </div>
+          <div class="card settings-wide">
+            <div class="section-head compact"><div><h2>Logs</h2><p class="section-sub">Eventos tecnicos del sistema.</p></div><button class="btn danger" type="button" onclick="clearLogs()">Borrar logs</button></div>
+            <div id="logsList" class="table-wrap"></div>
+          </div>
         </div>
       </section>
 
-      <section id="panel-logs" class="panel section">
-        <div class="section-head"><div><h2 class="section-title">Logs</h2><p class="section-sub">Eventos técnicos del sistema.</p></div><button class="btn danger" type="button" onclick="clearLogs()">Borrar logs</button></div>
-        <div id="logsList" class="table-wrap"></div>
-      </section>
     </main>
   </div>
 
@@ -234,7 +223,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    var sessionToken = localStorage.getItem('en_admin_session') || '';
+    var sessionToken = '';
     var adminData = {};
     var currentUser = null;
     var qrStream = null;
@@ -251,23 +240,40 @@
       payload.userAgent = navigator.userAgent;
       return RTApi.admin(action, payload);
     }
-    function showLoading(text){ if(window.RTIntro){ RTIntro.setStep(text || 'Cargando...'); document.getElementById('appIntro').classList.remove('closing'); document.getElementById('appIntro').style.display = 'grid'; } }
-    function hideLoading(){ if(window.RTIntro) RTIntro.hide(160); }
+    function showLoading(text){
+      var message = text || 'Cargando...';
+      document.body.classList.add('admin-loading');
+      document.body.setAttribute('aria-busy', 'true');
+      if($('loginScreen') && !$('loginScreen').classList.contains('hidden')){
+        $('loginMessage').innerHTML = '<span class="loading-inline"></span>' + RTApi.esc(message);
+      }
+    }
+    function hideLoading(){
+      document.body.classList.remove('admin-loading');
+      document.body.removeAttribute('aria-busy');
+    }
+    function setLoginBusy(busy, message){
+      $('loginBtn').disabled = busy;
+      $('loginBtn').textContent = busy ? 'Entrando...' : 'Entrar';
+      if(message) $('loginMessage').innerHTML = '<span class="loading-inline"></span>' + RTApi.esc(message);
+    }
 
     async function login(){
-      $('loginBtn').disabled = true;
-      $('loginMessage').textContent = 'Verificando...';
+      setLoginBusy(true, 'Verificando acceso...');
       try {
-        var result = await RTApi.admin('login', { email:$('loginEmail').value, password:$('loginPassword').value, userAgent:navigator.userAgent });
+        var email = $('loginEmail').value.trim();
+        var result = await RTApi.admin('login', { email:email, password:$('loginPassword').value, userAgent:navigator.userAgent });
         sessionToken = result.sessionToken;
-        localStorage.setItem('en_admin_session', sessionToken);
+        if(!sessionToken) throw new Error('No se recibio una sesion valida.');
+        localStorage.setItem('en_admin_email', email);
         currentUser = result;
         $('loginPassword').value = '';
+        setLoginBusy(true, 'Cargando panel...');
         await bootstrap();
       } catch(error) {
         $('loginMessage').textContent = error.message || String(error);
       } finally {
-        $('loginBtn').disabled = false;
+        setLoginBusy(false);
       }
     }
     async function logout(){
@@ -411,35 +417,84 @@
     function previewPhotoFile(input, previewId){
       var file = input.files && input.files[0];
       if(!file){ setPreview(previewId, ''); return; }
-      var reader = new FileReader();
-      reader.onload = function(){ setPreview(previewId, reader.result); };
-      reader.readAsDataURL(file);
+      optimizeImageFile(file).then(function(result){
+        setPreview(previewId, result.dataUrl);
+      }).catch(function(){
+        var reader = new FileReader();
+        reader.onload = function(){ setPreview(previewId, reader.result); };
+        reader.readAsDataURL(file);
+      });
     }
     async function uploadServicePhotosIfNeeded(){
       var jobs = [
         { input:'serviceImageFile', target:'serviceImage', label:'principal' },
         { input:'serviceBeforeFile', target:'serviceBeforeImage', label:'antes' },
-        { input:'serviceAfterFile', target:'serviceAfterImage', label:'después' }
+        { input:'serviceAfterFile', target:'serviceAfterImage', label:'despues' }
       ];
       for(var i = 0; i < jobs.length; i++){
         var job = jobs[i];
         var input = $(job.input);
         var file = input && input.files && input.files[0];
         if(!file) continue;
-        $('serviceUploadStatus').textContent = 'Subiendo foto ' + job.label + '...';
-        var dataUrl = await fileToDataUrl(file);
-        var result = await adminBridgeCall('uploadImage', { dataUrl:dataUrl, fileName:file.name, context:'service-' + job.label });
+        $('serviceUploadStatus').innerHTML = '<span class="loading-inline"></span>Optimizando foto ' + job.label + '...';
+        var optimized = await optimizeImageFile(file);
+        $('serviceUploadStatus').innerHTML = '<span class="loading-inline"></span>Subiendo foto ' + job.label + ' (' + optimized.sizeLabel + ')...';
+        var result = await adminBridgeCall('uploadImage', { dataUrl:optimized.dataUrl, fileName:optimized.fileName, context:'service-' + job.label });
         $(job.target).value = result.url;
       }
       $('serviceUploadStatus').textContent = '';
     }
     function fileToDataUrl(file){
+      return optimizeImageFile(file).then(function(result){ return result.dataUrl; });
+    }
+    function optimizeImageFile(file){
       return new Promise(function(resolve, reject){
         var reader = new FileReader();
-        reader.onload = function(){ resolve(reader.result); };
+        reader.onload = function(){
+          var image = new Image();
+          image.onload = function(){
+            try {
+              var maxSide = 1800;
+              var width = image.naturalWidth || image.width;
+              var height = image.naturalHeight || image.height;
+              var scale = Math.min(1, maxSide / Math.max(width, height));
+              var targetWidth = Math.max(1, Math.round(width * scale));
+              var targetHeight = Math.max(1, Math.round(height * scale));
+              var canvas = document.createElement('canvas');
+              canvas.width = targetWidth;
+              canvas.height = targetHeight;
+              var ctx = canvas.getContext('2d');
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.fillStyle = '#fff';
+              ctx.fillRect(0, 0, targetWidth, targetHeight);
+              ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+              var dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+              resolve({
+                dataUrl:dataUrl,
+                fileName:makeOptimizedFileName(file.name),
+                sizeLabel:formatImageSize(dataUrl)
+              });
+            } catch(error) {
+              reject(error);
+            }
+          };
+          image.onerror = function(){ reject(new Error('No se pudo abrir la imagen.')); };
+          image.src = reader.result;
+        };
         reader.onerror = function(){ reject(new Error('No se pudo leer la imagen.')); };
         reader.readAsDataURL(file);
       });
+    }
+    function makeOptimizedFileName(name){
+      var base = String(name || 'einnyadnails-photo').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '') || 'einnyadnails-photo';
+      return base + '-optimized.jpg';
+    }
+    function formatImageSize(dataUrl){
+      var base64 = String(dataUrl || '').split(',')[1] || '';
+      var bytes = Math.round(base64.length * 0.75);
+      if(bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+      return Math.max(1, Math.round(bytes / 1024)) + ' KB';
     }
     function adminBridgeCall(action, payload){
       payload = payload || {};
@@ -768,8 +823,25 @@
       confirmResolver = null;
     }
 
-    if(sessionToken) bootstrap();
-    else { if(window.RTIntro) RTIntro.hide(120); }
+    function initAdminLogin(){
+      localStorage.removeItem('en_admin_session');
+      var savedEmail = localStorage.getItem('en_admin_email');
+      if(savedEmail) $('loginEmail').value = savedEmail;
+      $('loginEmail').addEventListener('keydown', function(event){
+        if(event.key !== 'Enter') return;
+        event.preventDefault();
+        if($('loginPassword').value) login();
+        else $('loginPassword').focus();
+      });
+      $('loginPassword').addEventListener('keydown', function(event){
+        if(event.key === 'Enter'){
+          event.preventDefault();
+          login();
+        }
+      });
+    }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAdminLogin);
+    else initAdminLogin();
   </script>
 </body>
 </html>
