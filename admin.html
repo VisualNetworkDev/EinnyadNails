@@ -85,7 +85,10 @@
       <section id="panel-appointments" class="panel section">
         <div class="section-head">
           <div><h2 class="section-title">Ordenes</h2><p class="section-sub">Todas las reservas llegan aqui y tambien al correo configurado.</p></div>
-          <button class="btn" type="button" onclick="refreshAll()">Actualizar</button>
+          <div class="toolbar">
+            <button class="btn secondary" type="button" onclick="openManualAppointment()">Crear cita manual</button>
+            <button class="btn" type="button" onclick="refreshAll()">Actualizar</button>
+          </div>
         </div>
         <div id="appointmentsTable" class="table-wrap"></div>
       </section>
@@ -275,6 +278,7 @@
         <label class="field"><span>Fecha</span><input id="editPreferredDate" type="date" required></label>
         <label class="field"><span>Hora</span><input id="editPreferredTime" type="time" required></label>
         <label class="field"><span>Estado</span><select id="editStatus"><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select></label>
+        <label class="field check-field"><span>Excepcion de horario</span><input id="editOverrideAvailability" type="checkbox"> <small>Permitir fuera del horario publico</small></label>
         <label class="field"><span>Estado de pago</span><input id="editPaymentStatus"></label>
         <label class="field"><span>Metodo de pago</span><input id="editPaymentMethod"></label>
         <label class="field"><span>Cargo domicilio</span><input id="editTravelFee" type="number" min="0" step="0.01"></label>
@@ -291,6 +295,48 @@
       </div>
     </form>
   </div>
+  <div id="manualAppointmentModal" class="modal">
+    <form class="modal-card" onsubmit="saveManualAppointment(event)">
+      <div class="section-head compact">
+        <div>
+          <span class="badge green">Manual</span>
+          <h2>Crear cita desde admin</h2>
+          <p class="section-sub">Usa este flujo para citas fuera del horario publico o creadas por llamada.</p>
+        </div>
+        <button class="btn secondary" type="button" onclick="closeManualAppointment()">Cerrar</button>
+      </div>
+      <div class="grid grid-2">
+        <label class="field"><span>Nombre clienta</span><input id="manualCustomerName" required></label>
+        <label class="field"><span>Telefono</span><input id="manualCustomerPhone" required></label>
+        <label class="field"><span>Email</span><input id="manualCustomerEmail" type="email"></label>
+        <label class="field"><span>Direccion</span><input id="manualCustomerAddress" required></label>
+        <label class="field"><span>Fecha</span><input id="manualPreferredDate" type="date" required></label>
+        <label class="field"><span>Hora</span><input id="manualPreferredTime" type="time" required></label>
+        <label class="field"><span>Estado</span><select id="manualStatus"><option>Confirmed</option><option>Pending</option><option>Client arrived</option><option>In service</option></select></label>
+        <label class="field"><span>Idioma recibo</span><select id="manualLanguage"><option value="es">Espanol</option><option value="fr">Frances</option></select></label>
+        <label class="field"><span>Metodo de pago</span><input id="manualPaymentMethod" value="Pago en persona"></label>
+        <label class="field"><span>Estado de pago</span><input id="manualPaymentStatus" value="Pendiente / pago en persona"></label>
+        <label class="field"><span>Cargo domicilio</span><input id="manualTravelFee" type="number" min="0" step="0.01" value="0" oninput="renderManualAppointmentItems()"></label>
+        <label class="field"><span>Propina</span><input id="manualTip" type="number" min="0" step="0.01" value="0" oninput="renderManualAppointmentItems()"></label>
+      </div>
+      <div class="card" style="box-shadow:none;margin-top:14px;">
+        <div class="grid grid-2">
+          <label class="field"><span>Servicio</span><select id="manualServiceSelect"></select></label>
+          <label class="field"><span>Cantidad</span><input id="manualServiceQty" type="number" min="1" step="1" value="1"></label>
+        </div>
+        <button class="btn secondary" type="button" onclick="addManualAppointmentService()">Agregar servicio</button>
+        <div id="manualItemsList" class="extra-list" style="margin-top:12px;"></div>
+        <div id="manualTotalPreview" class="section-sub"></div>
+      </div>
+      <label class="field" style="margin-top:12px;"><span>Notas admin</span><textarea id="manualAdminNotes" placeholder="Cita creada por llamada, instrucciones especiales, etc."></textarea></label>
+      <label class="field"><span>Notas clienta</span><textarea id="manualCustomerNotes"></textarea></label>
+      <div id="manualAppointmentStatus" class="section-sub"></div>
+      <div class="toolbar" style="justify-content:flex-end;margin-top:16px;">
+        <button class="btn secondary" type="button" onclick="closeManualAppointment()">Cancelar</button>
+        <button id="manualAppointmentBtn" class="btn" type="submit">Crear cita</button>
+      </div>
+    </form>
+  </div>
   <div id="toast" class="toast"></div>
 
   <script>
@@ -302,6 +348,7 @@
     var qrDetector = null;
     var currentQrAppointment = null;
     var confirmResolver = null;
+    var manualAppointmentItems = [];
 
     function $(id){ return document.getElementById(id); }
     function toast(message){ var box = $('toast'); box.textContent = message; box.classList.add('show'); setTimeout(function(){ box.classList.remove('show'); }, 2600); }
@@ -464,6 +511,7 @@
       $('editPreferredDate').value = item.preferredDate || '';
       $('editPreferredTime').value = item.preferredTime || '';
       $('editStatus').value = item.status || 'Pending';
+      $('editOverrideAvailability').checked = String(item.createdBy || '').toLowerCase() === 'admin';
       $('editPaymentStatus').value = item.paymentStatus || '';
       $('editPaymentMethod').value = item.paymentMethod || '';
       $('editTravelFee').value = item.travelFee || 0;
@@ -490,6 +538,7 @@
           preferredDate:$('editPreferredDate').value,
           preferredTime:$('editPreferredTime').value,
           status:$('editStatus').value,
+          overrideAvailability:$('editOverrideAvailability').checked ? 'Yes' : 'No',
           paymentStatus:$('editPaymentStatus').value,
           paymentMethod:$('editPaymentMethod').value,
           travelFee:$('editTravelFee').value,
@@ -510,6 +559,105 @@
         $('editAppointmentStatus').textContent = error.message || String(error);
       } finally {
         $('editAppointmentBtn').disabled = false;
+      }
+    }
+    function openManualAppointment(){
+      manualAppointmentItems = [];
+      $('manualCustomerName').value = '';
+      $('manualCustomerPhone').value = '';
+      $('manualCustomerEmail').value = '';
+      $('manualCustomerAddress').value = '';
+      $('manualPreferredDate').value = '';
+      $('manualPreferredDate').min = new Date().toISOString().slice(0, 10);
+      $('manualPreferredTime').value = '';
+      $('manualStatus').value = 'Confirmed';
+      $('manualLanguage').value = 'es';
+      $('manualPaymentMethod').value = 'Pago en persona';
+      $('manualPaymentStatus').value = 'Pendiente / pago en persona';
+      $('manualTravelFee').value = Number((adminData.config && adminData.config.travelFee) || 0);
+      $('manualTip').value = 0;
+      $('manualAdminNotes').value = '';
+      $('manualCustomerNotes').value = '';
+      $('manualAppointmentStatus').textContent = '';
+      renderManualServiceOptions();
+      renderManualAppointmentItems();
+      $('manualAppointmentModal').classList.add('open');
+    }
+    function closeManualAppointment(){
+      $('manualAppointmentModal').classList.remove('open');
+    }
+    function renderManualServiceOptions(){
+      var services = (adminData.services || []).filter(function(service){ return service.visible !== false && String(service.available || 'Yes').toLowerCase() !== 'no'; });
+      $('manualServiceSelect').innerHTML = services.map(function(service){
+        return '<option value="' + RTApi.esc(service.id) + '">' + RTApi.esc((service.name || service.nameFr || service.id) + ' - ' + RTApi.money(service.price || 0)) + '</option>';
+      }).join('') || '<option value="">No hay servicios activos</option>';
+    }
+    function addManualAppointmentService(){
+      var serviceId = $('manualServiceSelect').value;
+      var service = (adminData.services || []).find(function(item){ return String(item.id) === String(serviceId); });
+      if(!service) return toast('Selecciona un servicio activo.');
+      var qty = Math.max(1, Number($('manualServiceQty').value || 1));
+      manualAppointmentItems.push({
+        id: service.id,
+        serviceId: service.id,
+        category: service.category || '',
+        name: service.name || service.id,
+        nameEs: service.name || service.id,
+        nameFr: service.nameFr || service.name || service.id,
+        price: Number(service.price || 0),
+        quantity: qty,
+        durationMinutes: Number(service.durationMinutes || 60)
+      });
+      $('manualServiceQty').value = 1;
+      renderManualAppointmentItems();
+    }
+    function removeManualAppointmentService(index){
+      manualAppointmentItems.splice(index, 1);
+      renderManualAppointmentItems();
+    }
+    function renderManualAppointmentItems(){
+      var subtotal = manualAppointmentItems.reduce(function(sum, item){ return sum + Number(item.price || 0) * Number(item.quantity || 1); }, 0);
+      var travelFee = Number(($('manualTravelFee') && $('manualTravelFee').value) || 0);
+      var tip = Number(($('manualTip') && $('manualTip').value) || 0);
+      var total = subtotal + travelFee + tip;
+      $('manualItemsList').innerHTML = manualAppointmentItems.map(function(item, index){
+        return '<div class="extra-row"><div><strong>' + RTApi.esc((item.quantity || 1) + 'x ' + (item.nameEs || item.name)) + '</strong><br><span class="section-sub">' + RTApi.money(Number(item.price || 0) * Number(item.quantity || 1)) + '</span></div><button class="btn danger" type="button" onclick="removeManualAppointmentService(' + index + ')">Quitar</button></div>';
+      }).join('') || '<div class="empty">Agrega los servicios de la cita.</div>';
+      $('manualTotalPreview').textContent = 'Subtotal ' + RTApi.money(subtotal) + ' | Total ' + RTApi.money(total);
+    }
+    async function saveManualAppointment(event){
+      event.preventDefault();
+      if(!manualAppointmentItems.length) return toast('Agrega al menos un servicio.');
+      var payload = {
+        appointment:{
+          customerName:$('manualCustomerName').value,
+          customerPhone:$('manualCustomerPhone').value,
+          customerEmail:$('manualCustomerEmail').value,
+          customerAddress:$('manualCustomerAddress').value,
+          preferredDate:$('manualPreferredDate').value,
+          preferredTime:$('manualPreferredTime').value,
+          status:$('manualStatus').value,
+          language:$('manualLanguage').value,
+          paymentMethod:$('manualPaymentMethod').value,
+          paymentStatus:$('manualPaymentStatus').value,
+          travelFee:$('manualTravelFee').value,
+          tip:$('manualTip').value,
+          adminNotes:$('manualAdminNotes').value,
+          customerNotes:$('manualCustomerNotes').value,
+          items:manualAppointmentItems
+        }
+      };
+      $('manualAppointmentBtn').disabled = true;
+      $('manualAppointmentStatus').innerHTML = '<span class="loading-inline"></span>Creando cita y enviando recibos...';
+      try {
+        var created = await adminCall('createManualAppointment', payload);
+        closeManualAppointment();
+        await refreshAll();
+        toast('Cita creada: ' + (created.appointmentId || ''));
+      } catch(error) {
+        $('manualAppointmentStatus').textContent = error.message || String(error);
+      } finally {
+        $('manualAppointmentBtn').disabled = false;
       }
     }
     async function cancelAppointment(id){
