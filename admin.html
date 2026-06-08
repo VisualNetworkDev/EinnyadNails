@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
-  <!-- FIX v7: admin sin pantalla de carga y sin auto-session vieja -->
   <meta name="theme-color" content="#2d131e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +15,16 @@
   <script src="assets/jsQR.js?v=einnyadnails-v3"></script>
   <script src="assets/config.js?v=einnyadnails-v3"></script>
   <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v3"></script>
 </head>
 <body>
+  <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="18000" role="status" aria-live="polite">
+    <div class="intro-card">
+      <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Panel de dueña</small></span></div>
+      <div class="intro-main"><div class="intro-plate"></div><h2>Abriendo admin</h2><p>Preparando citas, servicios, QR, pagos y reseñas.</p></div>
+      <div class="intro-status"><span id="appIntroStep">Verificando sesión...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
 
   <section id="loginScreen" class="login-screen">
     <div class="login-box">
@@ -227,8 +234,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    localStorage.removeItem('en_admin_session');
-    var sessionToken = '';
+    var sessionToken = localStorage.getItem('en_admin_session') || '';
     var adminData = {};
     var currentUser = null;
     var qrStream = null;
@@ -245,8 +251,8 @@
       payload.userAgent = navigator.userAgent;
       return RTApi.admin(action, payload);
     }
-    function showLoading(text){}
-    function hideLoading(){}
+    function showLoading(text){ if(window.RTIntro){ RTIntro.setStep(text || 'Cargando...'); document.getElementById('appIntro').classList.remove('closing'); document.getElementById('appIntro').style.display = 'grid'; } }
+    function hideLoading(){ if(window.RTIntro) RTIntro.hide(160); }
 
     async function login(){
       $('loginBtn').disabled = true;
@@ -762,10 +768,8 @@
       confirmResolver = null;
     }
 
-    localStorage.removeItem('en_admin_session');
-    sessionToken = '';
-    if($('loginScreen')) $('loginScreen').classList.remove('hidden');
-    if($('adminApp')) $('adminApp').classList.add('hidden');
+    if(sessionToken) bootstrap();
+    else { if(window.RTIntro) RTIntro.hide(120); }
   </script>
 </body>
 </html>
