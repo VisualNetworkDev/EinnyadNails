@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'einnyadnails-pwa-v4';
+const CACHE_VERSION = 'einnyadnails-pwa-v5';
 const CORE_ASSETS = [
   './index.html',
   './admin.html',
