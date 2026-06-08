@@ -15,14 +15,8 @@
   <script src="assets/jsQR.js?v=einnyadnails-v3"></script>
   <script src="assets/config.js?v=einnyadnails-v3"></script>
   <script src="assets/pwa.js?v=einnyadnails-v3" defer></script>
+</head>
 <body>
-  <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="18000" role="status" aria-live="polite">
-    <div class="intro-card">
-      <div class="intro-brand"><span class="intro-mark">EN</span><span><strong>EinnyadNails</strong><small>Panel de dueña</small></span></div>
-      <div class="intro-main"><div class="intro-plate"></div><h2>Abriendo admin</h2><p>Preparando citas, servicios, QR, pagos y reseñas.</p></div>
-      <div class="intro-status"><span id="appIntroStep">Verificando sesión...</span><div class="intro-dots"><i></i><i></i><i></i></div></div>
-    </div>
-  </div>
 
   <section id="loginScreen" class="login-screen">
     <div class="login-box">
@@ -249,8 +243,8 @@
       payload.userAgent = navigator.userAgent;
       return RTApi.admin(action, payload);
     }
-    function showLoading(text){ if(window.RTIntro){ RTIntro.setStep(text || 'Cargando...'); document.getElementById('appIntro').classList.remove('closing'); document.getElementById('appIntro').style.display = 'grid'; } }
-    function hideLoading(){ if(window.RTIntro) RTIntro.hide(160); }
+    function showLoading(text){}
+    function hideLoading(){}
 
     async function login(){
       $('loginBtn').disabled = true;
@@ -767,7 +761,6 @@
     }
 
     if(sessionToken) bootstrap();
-    else { if(window.RTIntro) RTIntro.hide(120); }
   </script>
 </body>
 </html>
