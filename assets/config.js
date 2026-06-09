@@ -5,7 +5,7 @@ window.EINNYAD_SYSTEM = {
   licenseName: 'EinnyadNails Booking System',
   licenseBy: 'Visual Event Network',
   currency: 'CAD',
-  apiTimeoutMs: 30000,
+  apiTimeoutMs: 60000,
 
   clientApiUrl: 'https://script.google.com/macros/s/AKfycby-8JObcZY4wzlqQn-pJqOlkDYt5ZBAQ-0bXLJ0SY7wn_NjiDVhscgNi2nVXxe-Ft8Y/exec',
   adminApiUrl: 'https://script.google.com/macros/s/AKfycbz1hX9WxBlPpAvrkn3_cZkWPTd6z6Uh1m0IpxaSDgtTzR1CN9yuKjKCCqOlaHQplK4J/exec',
@@ -28,42 +28,58 @@ window.EINNYAD_SYSTEM = {
 
   function jsonp(baseUrl, action, payload){
     payload = payload || {};
+    var attempts = 0;
     return new Promise(function(resolve, reject){
       if(!baseUrl || baseUrl.indexOf('PASTE' + '_') !== -1){
         reject(new Error('API URL is not configured yet in assets/config.js'));
         return;
       }
 
-      var callback = 'en_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-      var script = document.createElement('script');
-      var timer = setTimeout(function(){
-        cleanup();
-        reject(new Error('API request timed out'));
-      }, window.EINNYAD_SYSTEM.apiTimeoutMs || 30000);
+      function start(){
+        attempts += 1;
+        var callback = 'en_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        var script = document.createElement('script');
+        script.async = true;
+        script.referrerPolicy = 'no-referrer-when-downgrade';
+        var timer = setTimeout(function(){
+          cleanup();
+          retryOrReject(new Error('API request timed out'));
+        }, window.EINNYAD_SYSTEM.apiTimeoutMs || 60000);
 
-      function cleanup(){
-        clearTimeout(timer);
-        try { delete window[callback]; } catch(err) { window[callback] = undefined; }
-        if(script.parentNode) script.parentNode.removeChild(script);
+        function cleanup(){
+          clearTimeout(timer);
+          try { delete window[callback]; } catch(err) { window[callback] = undefined; }
+          if(script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        function retryOrReject(error){
+          if(attempts < 2) {
+            setTimeout(start, 900);
+            return;
+          }
+          reject(error);
+        }
+
+        window[callback] = function(response){
+          cleanup();
+          if(response && response.success) resolve(response.data || response);
+          else reject(new Error((response && response.message) || 'API error'));
+        };
+
+        script.onerror = function(){
+          cleanup();
+          retryOrReject(new Error('Could not reach API'));
+        };
+
+        script.src = buildUrl(baseUrl, {
+          action: action,
+          callback: callback,
+          payload: JSON.stringify(payload || {}),
+          _: Date.now() + '_' + attempts
+        });
+        document.body.appendChild(script);
       }
-
-      window[callback] = function(response){
-        cleanup();
-        if(response && response.success) resolve(response.data || response);
-        else reject(new Error((response && response.message) || 'API error'));
-      };
-
-      script.onerror = function(){
-        cleanup();
-        reject(new Error('Could not reach API'));
-      };
-
-      script.src = buildUrl(baseUrl, {
-        action: action,
-        callback: callback,
-        payload: JSON.stringify(payload || {})
-      });
-      document.body.appendChild(script);
+      start();
     });
   }
 
