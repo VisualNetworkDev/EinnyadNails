@@ -8,13 +8,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Nails Admin">
-  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v10">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v10">
+  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v11">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v11">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v10">
-  <script src="assets/jsQR.js?v=einnyadnails-v10"></script>
-  <script src="assets/config.js?v=einnyadnails-v10"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v10" defer></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v11">
+  <script src="assets/jsQR.js?v=einnyadnails-v11"></script>
+  <script src="assets/config.js?v=einnyadnails-v11"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v11" defer></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -216,7 +216,7 @@
           <form class="card" onsubmit="saveBlock(event)">
             <h2>Bloquear dia u hora</h2>
             <label class="field"><span>Fecha</span><input id="blockDate" type="date" required></label>
-            <div class="split"><label class="field"><span>Desde</span><input id="blockStart" type="time" required></label><label class="field"><span>Hasta</span><input id="blockEnd" type="time" required></label></div>
+            <div class="split"><label class="field"><span>Desde</span><input id="blockStart" type="text" inputmode="text" placeholder="9:00 AM" required></label><label class="field"><span>Hasta</span><input id="blockEnd" type="text" inputmode="text" placeholder="5:00 PM" required></label></div>
             <label class="field"><span>Motivo</span><input id="blockReason" placeholder="Cita personal, descanso, evento..."></label>
             <button class="btn full" type="submit">Guardar bloqueo</button>
           </form>
@@ -286,7 +286,7 @@
         <label class="field"><span>Email</span><input id="editCustomerEmail" type="email"></label>
         <label class="field"><span>Direccion</span><input id="editCustomerAddress" required></label>
         <label class="field"><span>Fecha</span><input id="editPreferredDate" type="date" required></label>
-        <label class="field"><span>Hora</span><input id="editPreferredTime" type="time" required></label>
+        <label class="field"><span>Hora</span><input id="editPreferredTime" type="text" inputmode="text" placeholder="9:00 AM" required></label>
         <label class="field"><span>Estado</span><select id="editStatus"><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select></label>
         <label class="field check-field"><span>Excepcion de horario</span><input id="editOverrideAvailability" type="checkbox"> <small>Permitir fuera del horario publico</small></label>
         <label class="field"><span>Estado de pago</span><input id="editPaymentStatus"></label>
@@ -321,7 +321,7 @@
         <label class="field"><span>Email</span><input id="manualCustomerEmail" type="email"></label>
         <label class="field"><span>Direccion</span><input id="manualCustomerAddress" required></label>
         <label class="field"><span>Fecha</span><input id="manualPreferredDate" type="date" required></label>
-        <label class="field"><span>Hora</span><input id="manualPreferredTime" type="time" required></label>
+        <label class="field"><span>Hora</span><input id="manualPreferredTime" type="text" inputmode="text" placeholder="9:00 AM" required></label>
         <label class="field"><span>Estado</span><select id="manualStatus"><option>Confirmed</option><option>Pending</option><option>Client arrived</option><option>In service</option></select></label>
         <label class="field"><span>Idioma recibo</span><select id="manualLanguage"><option value="es">Espanol</option><option value="fr">Frances</option></select></label>
         <label class="field"><span>Metodo de pago</span><input id="manualPaymentMethod" value="Pago en persona"></label>
@@ -362,6 +362,35 @@
 
     function $(id){ return document.getElementById(id); }
     function toast(message){ var box = $('toast'); box.textContent = message; box.classList.add('show'); setTimeout(function(){ box.classList.remove('show'); }, 2600); }
+    function timeToMinutes(value){
+      var raw = String(value == null ? '' : value).trim();
+      if(!raw) return -1;
+      var match = raw.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp]\.?[Mm]\.?)?$/);
+      if(!match) return -1;
+      var hour = Number(match[1]);
+      var minute = Number(match[2] || 0);
+      var suffix = (match[3] || '').replace(/\./g, '').toUpperCase();
+      if(minute < 0 || minute > 59) return -1;
+      if(suffix){
+        if(hour < 1 || hour > 12) return -1;
+        if(suffix === 'PM' && hour < 12) hour += 12;
+        if(suffix === 'AM' && hour === 12) hour = 0;
+      } else if(hour < 0 || hour > 23) {
+        return -1;
+      }
+      return hour * 60 + minute;
+    }
+    function formatTime12(value){
+      var minutes = timeToMinutes(value);
+      if(minutes < 0) return String(value || '').trim();
+      minutes = ((minutes % 1440) + 1440) % 1440;
+      var hour24 = Math.floor(minutes / 60);
+      var minute = minutes % 60;
+      var suffix = hour24 >= 12 ? 'PM' : 'AM';
+      var hour12 = hour24 % 12;
+      if(hour12 === 0) hour12 = 12;
+      return hour12 + ':' + String(minute).padStart(2, '0') + ' ' + suffix;
+    }
     function adminCall(action, payload){
       payload = payload || {};
       payload.sessionToken = sessionToken;
@@ -479,7 +508,7 @@
       renderCalendarWeek();
     }
     function renderAppointmentSummary(item){
-      return '<strong>' + RTApi.esc(item.customerName || '') + '</strong><br>' + RTApi.esc((item.preferredDate || '') + ' ' + (item.preferredTime || '')) + '<br><span class="section-sub">' + RTApi.esc(item.status || '') + ' | ' + RTApi.money(item.totalUpdated || item.total || 0) + '</span><br><span class="section-sub">' + RTApi.esc(item.customerAddress || '') + '</span>';
+      return '<strong>' + RTApi.esc(item.customerName || '') + '</strong><br>' + RTApi.esc((item.preferredDate || '') + ' ' + formatTime12(item.preferredTime || '')) + '<br><span class="section-sub">' + RTApi.esc(item.status || '') + ' | ' + RTApi.money(item.totalUpdated || item.total || 0) + '</span><br><span class="section-sub">' + RTApi.esc(item.customerAddress || '') + '</span>';
     }
     function renderCalendarWeek(){
       var appointments = adminData.appointments || [];
@@ -490,17 +519,18 @@
         var date = new Date(today.getTime() + i * 86400000);
         var iso = date.toISOString().slice(0, 10);
         var label = date.toLocaleDateString('es-ES', { weekday:'short', day:'numeric' });
-        var items = appointments.filter(function(item){ return item.preferredDate === iso; }).sort(function(a, b){ return String(a.preferredTime).localeCompare(String(b.preferredTime)); });
-        days.push('<article class="calendar-day"><strong>' + RTApi.esc(label) + '</strong><span>' + RTApi.esc(iso) + '</span><div>' + (items.map(function(item){ return '<button type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')" class="calendar-event ' + (String(item.status).toLowerCase().indexOf('cancel') !== -1 ? 'is-cancelled' : '') + '"><b>' + RTApi.esc(item.preferredTime || '') + '</b> ' + RTApi.esc(item.customerName || '') + '<small>' + RTApi.esc(item.status || '') + '</small></button>'; }).join('') || '<em>Libre</em>') + '</div></article>');
+        var items = appointments.filter(function(item){ return item.preferredDate === iso; }).sort(function(a, b){ return timeToMinutes(a.preferredTime) - timeToMinutes(b.preferredTime); });
+        days.push('<article class="calendar-day"><strong>' + RTApi.esc(label) + '</strong><span>' + RTApi.esc(iso) + '</span><div>' + (items.map(function(item){ return '<button type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')" class="calendar-event ' + (String(item.status).toLowerCase().indexOf('cancel') !== -1 ? 'is-cancelled' : '') + '"><b>' + RTApi.esc(formatTime12(item.preferredTime || '')) + '</b> ' + RTApi.esc(item.customerName || '') + '<small>' + RTApi.esc(item.status || '') + '</small></button>'; }).join('') || '<em>Libre</em>') + '</div></article>');
       }
       $('calendarWeek').innerHTML = days.join('');
     }
     function renderAppointments(){
       var list = adminData.appointments || [];
       if(!list.length){ $('appointmentsTable').innerHTML = '<div class="empty">No hay citas todavía.</div>'; return; }
-      $('appointmentsTable').innerHTML = '<table><thead><tr><th>Cita</th><th>Clienta</th><th>Servicios</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function(item){
-        var services = (item.items || []).map(function(row){ return (row.quantity || 1) + 'x ' + (row.nameEs || row.name); }).join('<br>');
-        return '<tr><td><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td>' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td>' + services + '</td><td>' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + '</td><td>' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span></td><td><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td><div class="table-actions"><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Editar</button><button class="btn secondary" type="button" onclick="resendReceipt(\'' + RTApi.esc(item.appointmentId) + '\')">Recibo</button><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">QR</button><button class="btn danger" type="button" onclick="cancelAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Cancelar</button></div></td></tr>';
+      $('appointmentsTable').innerHTML = '<table class="appointments-table"><thead><tr><th>Cita</th><th>Clienta</th><th>Servicios</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function(item){
+        var services = (item.items || []).map(function(row){ return RTApi.esc((row.quantity || 1) + 'x ' + (row.nameEs || row.name)); }).join('<br>');
+        var travelFeeLine = Number(item.travelFee || 0) > 0 ? '<br><span class="section-sub">Cargo domicilio ' + RTApi.money(item.travelFee || 0) + '</span>' : '';
+        return '<tr><td data-label="Cita"><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td data-label="Clienta">' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td data-label="Servicios">' + services + '</td><td data-label="Fecha">' + RTApi.esc(item.preferredDate + ' ' + formatTime12(item.preferredTime)) + '</td><td data-label="Total">' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span>' + travelFeeLine + '</td><td data-label="Estado"><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td data-label="Acciones"><div class="table-actions"><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Editar</button><button class="btn secondary" type="button" onclick="resendReceipt(\'' + RTApi.esc(item.appointmentId) + '\')">Recibo</button><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">QR</button><button class="btn danger" type="button" onclick="cancelAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Cancelar</button></div></td></tr>';
       }).join('') + '</tbody></table>';
     }
     async function updateStatus(id, status){
@@ -519,7 +549,7 @@
       $('editCustomerEmail').value = item.customerEmail || '';
       $('editCustomerAddress').value = item.customerAddress || '';
       $('editPreferredDate').value = item.preferredDate || '';
-      $('editPreferredTime').value = item.preferredTime || '';
+      $('editPreferredTime').value = formatTime12(item.preferredTime || '');
       $('editStatus').value = item.status || 'Pending';
       $('editOverrideAvailability').checked = String(item.createdBy || '').toLowerCase() === 'admin';
       $('editPaymentStatus').value = item.paymentStatus || '';
@@ -546,7 +576,7 @@
           customerEmail:$('editCustomerEmail').value,
           customerAddress:$('editCustomerAddress').value,
           preferredDate:$('editPreferredDate').value,
-          preferredTime:$('editPreferredTime').value,
+          preferredTime:formatTime12($('editPreferredTime').value),
           status:$('editStatus').value,
           overrideAvailability:$('editOverrideAvailability').checked ? 'Yes' : 'No',
           paymentStatus:$('editPaymentStatus').value,
@@ -633,7 +663,7 @@
       $('manualItemsList').innerHTML = manualAppointmentItems.map(function(item, index){
         return '<div class="extra-row"><div><strong>' + RTApi.esc((item.quantity || 1) + 'x ' + (item.nameEs || item.name)) + '</strong><br><span class="section-sub">' + RTApi.money(Number(item.price || 0) * Number(item.quantity || 1)) + '</span></div><button class="btn danger" type="button" onclick="removeManualAppointmentService(' + index + ')">Quitar</button></div>';
       }).join('') || '<div class="empty">Agrega los servicios de la cita.</div>';
-      $('manualTotalPreview').textContent = 'Subtotal ' + RTApi.money(subtotal) + ' | Total ' + RTApi.money(total);
+      $('manualTotalPreview').textContent = 'Subtotal ' + RTApi.money(subtotal) + ' | Cargo domicilio ' + RTApi.money(travelFee) + ' | Propina ' + RTApi.money(tip) + ' | Total ' + RTApi.money(total);
     }
     async function saveManualAppointment(event){
       event.preventDefault();
@@ -645,7 +675,7 @@
           customerEmail:$('manualCustomerEmail').value,
           customerAddress:$('manualCustomerAddress').value,
           preferredDate:$('manualPreferredDate').value,
-          preferredTime:$('manualPreferredTime').value,
+          preferredTime:formatTime12($('manualPreferredTime').value),
           status:$('manualStatus').value,
           language:$('manualLanguage').value,
           paymentMethod:$('manualPaymentMethod').value,
@@ -909,26 +939,23 @@
       var data = adminData.availability || {};
       var hours = data.hours || [];
       var defaultDays = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-      if(!hours.length) hours = defaultDays.map(function(day){ return { day:day, open:'09:00', close: day === 'Domingo' ? '' : '18:00', active: day === 'Domingo' ? 'No' : 'Yes' }; });
+      if(!hours.length) hours = defaultDays.map(function(day){ return { day:day, open:'9:00 AM', close: day === 'Domingo' ? '' : '6:00 PM', active: day === 'Domingo' ? 'No' : 'Yes' }; });
       $('hoursEditor').innerHTML = hours.map(function(row){
-        return '<div class="hour-row" data-day="' + RTApi.esc(row.day) + '"><strong>' + RTApi.esc(row.day) + '</strong><input class="hour-open" type="time" value="' + RTApi.esc(normalizeUiTime(row.open || '')) + '"><input class="hour-close" type="time" value="' + RTApi.esc(normalizeUiTime(row.close || '')) + '"><label><input class="hour-active" type="checkbox" ' + (isActiveValue(row.active) ? 'checked' : '') + '> Abierto</label></div>';
+        return '<div class="hour-row" data-day="' + RTApi.esc(row.day) + '"><strong>' + RTApi.esc(row.day) + '</strong><input class="hour-open" type="text" inputmode="text" placeholder="9:00 AM" value="' + RTApi.esc(formatTime12(row.open || '')) + '"><input class="hour-close" type="text" inputmode="text" placeholder="5:00 PM" value="' + RTApi.esc(formatTime12(row.close || '')) + '"><label><input class="hour-active" type="checkbox" ' + (isActiveValue(row.active) ? 'checked' : '') + '> Abierto</label></div>';
       }).join('');
       $('blocksList').innerHTML = (data.blocks || []).filter(function(block){ return block.active !== 'No'; }).map(function(block){
-        return '<div class="extra-row"><div><strong>' + RTApi.esc(block.date) + ' | ' + RTApi.esc(block.startTime) + '-' + RTApi.esc(block.endTime) + '</strong><br><span class="section-sub">' + RTApi.esc(block.reason || 'Bloqueo manual') + '</span></div><button class="btn danger" type="button" onclick="removeBlock(\'' + RTApi.esc(block.blockId) + '\')">Quitar</button></div>';
+        return '<div class="extra-row"><div><strong>' + RTApi.esc(block.date) + ' | ' + RTApi.esc(formatTime12(block.startTime)) + '-' + RTApi.esc(formatTime12(block.endTime)) + '</strong><br><span class="section-sub">' + RTApi.esc(block.reason || 'Bloqueo manual') + '</span></div><button class="btn danger" type="button" onclick="removeBlock(\'' + RTApi.esc(block.blockId) + '\')">Quitar</button></div>';
       }).join('') || '<div class="empty">No hay bloqueos activos.</div>';
     }
     function isActiveValue(value){
       return ['yes','true','1','active','activo','si','sí','oui','y'].indexOf(String(value || '').trim().toLowerCase()) !== -1;
     }
     function normalizeUiTime(value){
-      var raw = String(value || '').trim();
-      var match = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
-      if(!match) return raw;
-      return String(Number(match[1])).padStart(2, '0') + ':' + match[2];
+      return formatTime12(value);
     }
     async function saveHours(){
       var hours = Array.from(document.querySelectorAll('.hour-row')).map(function(row){
-        return { day: row.getAttribute('data-day'), open: row.querySelector('.hour-open').value, close: row.querySelector('.hour-close').value, active: row.querySelector('.hour-active').checked ? 'Yes' : 'No' };
+        return { day: row.getAttribute('data-day'), open: formatTime12(row.querySelector('.hour-open').value), close: formatTime12(row.querySelector('.hour-close').value), active: row.querySelector('.hour-active').checked ? 'Yes' : 'No' };
       });
       showLoading('Guardando horarios...');
       try { adminData.availability = await adminCall('saveBusinessHours', { hours:hours }); renderAvailability(); toast('Horarios guardados'); }
@@ -939,7 +966,7 @@
       event.preventDefault();
       showLoading('Guardando bloqueo...');
       try {
-        adminData.availability = await adminCall('saveBlockedSlot', { date:$('blockDate').value, startTime:$('blockStart').value, endTime:$('blockEnd').value, reason:$('blockReason').value });
+        adminData.availability = await adminCall('saveBlockedSlot', { date:$('blockDate').value, startTime:formatTime12($('blockStart').value), endTime:formatTime12($('blockEnd').value), reason:$('blockReason').value });
         event.target.reset();
         renderAvailability();
         toast('Bloqueo guardado');
@@ -1071,7 +1098,7 @@
       var extrasForm = receiptOnly ? '' : '<div class="card" style="box-shadow:none;margin-top:12px;"><label class="field"><span>Servicio extra activo</span><select id="extraService" onchange="fillExtraFromService()"><option value="manual">Manual</option>' + servicesOptions + '</select></label><label class="field"><span>Nombre extra</span><input id="extraName"></label><label class="field"><span>Precio</span><input id="extraPrice" type="number" min="0" step="0.01" value="0"></label><label class="field"><span>Notas</span><textarea id="extraNotes"></textarea></label><button class="btn full" type="button" onclick="addExtra()">Agregar extra al recibo</button></div>';
       var logsHtml = (item.qrLogs || []).map(function(log){ return '<div class="qr-log-line"><strong>' + RTApi.esc(log.action || '') + '</strong><span>' + RTApi.esc(log.timestamp || '') + '</span><p>' + RTApi.esc(log.notes || '') + '</p></div>'; }).join('') || '<div class="empty">Sin historial QR todavia.</div>';
       var actions = receiptOnly ? '' : '<button class="btn secondary" type="button" onclick="updateQrStage(\'Client arrived\')">Clienta llegó</button><button class="btn secondary" type="button" onclick="updateQrStage(\'In service\')">En servicio</button><button class="btn success" type="button" onclick="finishAppointment()">Finalizar cita</button>';
-      $('qrResult').innerHTML = '<div><span class="badge ' + (receiptOnly ? 'dark' : 'green') + '">' + RTApi.esc(receiptOnly ? 'Recibo final' : (item.qrStatus || 'Active')) + '</span><h2>' + RTApi.esc(item.appointmentId) + '</h2><p><strong>' + RTApi.esc(item.customerName) + '</strong><br>' + RTApi.esc(item.customerPhone) + '<br>' + RTApi.esc(item.customerAddress) + '</p><p class="section-sub">' + RTApi.esc(item.preferredDate + ' ' + item.preferredTime) + ' | Estado: ' + RTApi.esc(item.status) + '</p><div class="admin-grid"><div class="metric-card"><span>Total actual</span><strong>' + RTApi.money(item.totalUpdated || item.total) + '</strong></div><div class="metric-card"><span>Extras</span><strong>' + RTApi.money(item.extraTotal || 0) + '</strong></div></div><div class="toolbar" style="margin:14px 0;">' + actions + '</div><h3>Servicios extras</h3>' + extrasHtml + extrasForm + '<h3>Historial QR</h3><div class="qr-log-list">' + logsHtml + '</div></div>';
+      $('qrResult').innerHTML = '<div><span class="badge ' + (receiptOnly ? 'dark' : 'green') + '">' + RTApi.esc(receiptOnly ? 'Recibo final' : (item.qrStatus || 'Active')) + '</span><h2>' + RTApi.esc(item.appointmentId) + '</h2><p><strong>' + RTApi.esc(item.customerName) + '</strong><br>' + RTApi.esc(item.customerPhone) + '<br>' + RTApi.esc(item.customerAddress) + '</p><p class="section-sub">' + RTApi.esc(item.preferredDate + ' ' + formatTime12(item.preferredTime)) + ' | Estado: ' + RTApi.esc(item.status) + '</p><div class="admin-grid"><div class="metric-card"><span>Total actual</span><strong>' + RTApi.money(item.totalUpdated || item.total) + '</strong></div><div class="metric-card"><span>Extras</span><strong>' + RTApi.money(item.extraTotal || 0) + '</strong></div></div><div class="toolbar" style="margin:14px 0;">' + actions + '</div><h3>Servicios extras</h3>' + extrasHtml + extrasForm + '<h3>Historial QR</h3><div class="qr-log-list">' + logsHtml + '</div></div>';
     }
     function fillExtraFromService(){
       var select = $('extraService');
