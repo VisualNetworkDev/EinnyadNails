@@ -6,7 +6,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./service-worker.js?v=einnyadnails-v10').then(function(registration){
+      navigator.serviceWorker.register('./service-worker.js?v=einnyadnails-v11').then(function(registration){
         registration.update().catch(function(){});
       }).catch(function(){});
     });
