@@ -949,3 +949,270 @@ th { color:var(--muted); font-size:13px; }
   .navlinks button, .navlinks a { padding:9px 10px; font-size:13px; }
   .btn { padding:12px 15px; }
 }
+
+
+/* v12 - Admin mobile viewport fix: prevents right-side clipping without changing booking/admin logic */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  min-width: 0;
+}
+
+.admin-shell,
+.admin-shell main,
+.admin-shell .container,
+.admin-shell .panel,
+.admin-shell .section,
+.admin-shell .card,
+.admin-shell .settings-grid,
+.admin-shell .grid,
+.admin-shell .admin-grid,
+.admin-shell .dashboard-stack,
+.admin-shell .section-head,
+.admin-shell .toolbar,
+.admin-shell .field,
+.admin-shell .split,
+.admin-shell .hours-editor,
+.admin-shell .table-wrap,
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select,
+.admin-shell button {
+  max-width: 100%;
+}
+
+.admin-shell .card,
+.admin-shell .metric-card,
+.admin-shell .service-form-section,
+.admin-shell .empty,
+.admin-shell .section-sub,
+.admin-shell .field,
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3,
+.admin-shell p,
+.admin-shell span,
+.admin-shell strong,
+.admin-shell a,
+.admin-shell td,
+.admin-shell th {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 16px;
+}
+
+.admin-shell textarea {
+  overflow-wrap: break-word;
+}
+
+.admin-shell .btn {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.admin-shell .calendar-week,
+.admin-shell .admin-tabs,
+.admin-shell .navlinks,
+.admin-shell .table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+  .admin-shell .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .admin-shell .nav.container {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .admin-shell .admin-top,
+  .admin-shell .panel.section {
+    width: 100%;
+  }
+
+  .admin-shell .settings-grid,
+  .admin-shell .grid-2,
+  .admin-shell .grid-3,
+  .admin-shell .admin-grid,
+  .admin-shell .qr-layout,
+  .admin-shell .photo-upload-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell .settings-grid > *,
+  .admin-shell .grid > *,
+  .admin-shell .admin-grid > *,
+  .admin-shell .dashboard-stack > *,
+  .admin-shell .card > *,
+  .admin-shell form > *,
+  .admin-shell .service-form-section > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-shell .section-head.compact {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-shell .toolbar {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .admin-shell .toolbar .btn,
+  .admin-shell .toolbar button,
+  .admin-shell .section-head.compact > .btn,
+  .admin-shell .section-head.compact > button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-shell .hours-editor {
+    width: 100%;
+  }
+
+  .admin-shell .hour-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+  }
+
+  .admin-shell .calendar-week {
+    display: flex;
+    grid-template-columns: none;
+    gap: 12px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 10px;
+  }
+
+  .admin-shell .calendar-day {
+    flex: 0 0 min(74vw, 230px);
+    width: min(74vw, 230px);
+    min-width: 0;
+  }
+
+  .admin-shell .calendar-event {
+    white-space: normal;
+  }
+
+  .admin-shell .top-service-line,
+  .admin-shell .extra-row,
+  .admin-shell .photo-storage-line {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-shell .card {
+    width: 100%;
+    padding: 16px;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .admin-shell .section-title {
+    font-size: clamp(31px, 9vw, 40px);
+    line-height: 1.06;
+  }
+
+  .admin-shell .card h2 {
+    font-size: clamp(27px, 7.6vw, 36px);
+    line-height: 1.08;
+  }
+
+  .admin-shell .field span,
+  .admin-shell .field label {
+    line-height: 1.25;
+  }
+
+  .admin-shell .split {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell .photo-storage-line,
+  .admin-shell .extra-row,
+  .admin-shell .top-service-line,
+  .admin-shell .info-row,
+  .admin-shell .contact-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-shell #logsList.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+  }
+
+  .admin-shell #logsList table {
+    min-width: 660px;
+  }
+
+  .admin-shell .appointments-table tr,
+  .admin-shell .appointments-table td {
+    max-width: 100%;
+  }
+
+  .admin-shell .appointments-table td {
+    grid-template-columns: minmax(76px, 96px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-shell .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .admin-shell .card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .admin-shell .metric-card {
+    padding: 15px;
+  }
+
+  .admin-shell .section {
+    padding-top: 34px;
+    padding-bottom: 34px;
+  }
+
+  .admin-shell .admin-top {
+    padding-top: 26px;
+  }
+
+  .admin-shell .btn {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .admin-shell .appointments-table td {
+    grid-template-columns: minmax(70px, 88px) minmax(0, 1fr);
+    gap: 8px;
+  }
+}
