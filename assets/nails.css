@@ -305,6 +305,9 @@ input:focus, textarea:focus, select:focus { border-color:var(--brand-2); box-sha
 .split { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
 .totals { display:grid; gap:8px; border-top:1px solid var(--line); padding-top:14px; }
 .total-line { display:flex; justify-content:space-between; gap:10px; color:var(--muted); }
+.total-line span { min-width:0; }
+.total-line small { display:block; margin-top:3px; color:var(--muted); font-size:12px; line-height:1.25; font-weight:700; }
+.total-line.fee-line { align-items:flex-start; }
 .total-line.grand { color:var(--brand-3); font-weight:950; font-size:22px; }
 .empty { border:1px dashed var(--line); border-radius:18px; padding:22px; color:var(--muted); background:#fffafc; }
 .review-submit { margin-top:20px; display:grid; gap:14px; }
@@ -472,6 +475,9 @@ th { color:var(--muted); font-size:13px; }
 .qr-log-line p { margin:6px 0 0; color:var(--ink); }
 .extras-list { display:grid; gap:8px; margin:12px 0; }
 .extra-row { display:flex; justify-content:space-between; gap:12px; align-items:center; border:1px solid var(--line); border-radius:14px; padding:10px; background:#fffafc; }
+.appointment-date-row { display:grid; gap:12px; }
+.slot-panel { display:grid; gap:10px; }
+.slot-title { color:var(--brand-3); font-weight:950; }
 .time-slots { display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 12px; }
 .time-chip {
   border:1px solid var(--line);
@@ -895,6 +901,45 @@ th { color:var(--muted); font-size:13px; }
   .login-box { width:min(100%, 430px); }
   .admin-loading::after { top:14px; width:max-content; max-width:90vw; }
 }
+
+@media (max-width: 760px) {
+  .table-wrap { overflow:visible; border:0; background:transparent; }
+  .appointments-table,
+  .appointments-table thead,
+  .appointments-table tbody,
+  .appointments-table tr,
+  .appointments-table td { display:block; width:100%; }
+  .appointments-table thead { display:none; }
+  .appointments-table tr {
+    margin-bottom:14px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:10px;
+    background:#fff;
+    box-shadow:var(--shadow);
+  }
+  .appointments-table td {
+    display:grid;
+    grid-template-columns:104px minmax(0, 1fr);
+    gap:10px;
+    padding:10px 6px;
+    border-bottom:1px solid var(--line);
+    word-break:break-word;
+  }
+  .appointments-table td:last-child { border-bottom:0; }
+  .appointments-table td::before {
+    content:attr(data-label);
+    color:var(--brand-3);
+    font-weight:950;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .appointments-table .table-actions { min-width:0; width:100%; display:grid; grid-template-columns:1fr; }
+  .appointments-table .table-actions select,
+  .appointments-table .table-actions .btn { width:100%; }
+}
+
 @media (max-width: 380px) {
   .container { width:min(100% - 20px, 1160px); }
   .brand { font-size:15px; gap:10px; }
