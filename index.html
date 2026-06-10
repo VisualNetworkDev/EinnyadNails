@@ -8,13 +8,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="EinnyadNails">
-  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v10">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v10">
+  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v11">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v11">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v10">
-  <script src="assets/config.js?v=einnyadnails-v10"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v10" defer></script>
-  <script src="assets/app-intro.js?v=einnyadnails-v10"></script>
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v11">
+  <script src="assets/config.js?v=einnyadnails-v11"></script>
+  <script src="assets/pwa.js?v=einnyadnails-v11" defer></script>
+  <script src="assets/app-intro.js?v=einnyadnails-v11"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
@@ -167,12 +167,15 @@
 
         <div class="checkout-block">
           <h3 style="margin-top:0;" data-i18n="appointmentInfo">Información de la cita</h3>
-          <div class="split">
+          <div class="appointment-date-row">
             <label class="field"><span data-i18n="preferredDate">Fecha deseada</span><input id="preferredDate" type="date"></label>
-            <label class="field"><span data-i18n="preferredTime">Hora deseada</span><input id="preferredTime" type="time"></label>
+            <input id="preferredTime" type="hidden">
           </div>
-          <div id="availabilitySummary" class="availability-summary"></div>
-          <div id="timeSlots" class="time-slots"></div>
+          <div class="slot-panel">
+            <div class="slot-title" data-i18n="availableTimes">Horas disponibles</div>
+            <div id="timeSlots" class="time-slots"></div>
+            <div id="selectedTimeLabel" class="slot-help"></div>
+          </div>
           <label class="field"><span data-i18n="address">Dirección del servicio</span><input id="cAddress" autocomplete="street-address"></label>
           <div class="split">
             <label class="field"><span data-i18n="name">Nombre</span><input id="cName" autocomplete="name"></label>
@@ -264,7 +267,7 @@
         phone:'Teléfono', call:'Llamar', serviceArea:'Área de servicio', open:'Abrir', drawerTitle:'Tu cita', drawerSub:'Revisa servicios y confirma datos', close:'Cerrar', appointmentInfo:'Información de la cita',
         preferredDate:'Fecha deseada', preferredTime:'Hora deseada', address:'Dirección del servicio', coupon:'Cupón', payment:'Pago', tip:'Propina', notes:'Notas', placeAppointment:'Reservar cita',
         securePayment:'Pago Interac', stayHere:'Quedarme aquí', continuePayment:'Continuar al pago', savingTitle:'Preparando tu cita', savingText:'Verificando servicios, precios y recibo.', footerText:'Reservas a domicilio, QR de cita y recibos profesionales.',
-        all:'Todos', add:'Agregar', added:'Servicio agregado', emptyServices:'No hay servicios disponibles.', emptyCart:'No has agregado servicios.', subtotal:'Subtotal', discount:'Descuento', travelFee:'Cargo a domicilio', total:'Total',
+        all:'Todos', add:'Agregar', added:'Servicio agregado', emptyServices:'No hay servicios disponibles.', emptyCart:'No has agregado servicios.', subtotal:'Subtotal', discount:'Descuento', travelFee:'Cargo a domicilio', travelFeeHelp:'Incluido por servicio a domicilio', availableTimes:'Horas disponibles', selectedTime:'Hora seleccionada', total:'Total',
         loadingTimes:'Buscando horarios disponibles...', noTimes:'No hay horarios disponibles para esa fecha.', chooseDateServices:'Selecciona servicios y fecha para ver horarios.',
         noPromos:'No hay promociones activas ahora.', noReviews:'Todavía no hay reseñas aprobadas.', reviewThanks:'Gracias. Tu reseña fue recibida.', requiredCart:'Selecciona al menos un servicio.', requiredAddress:'La dirección es requerida.', requiredDate:'Selecciona fecha y hora.', requiredAgreement:'Acepta el acuerdo de servicio.',
         appointmentReceived:'Cita recibida', appointmentId:'ID de cita', qrTitle:'QR de cita', qrHelp:'Muestra este QR cuando la técnica llegue para verificar la cita.', paymentStatus:'Estado de pago',
@@ -280,7 +283,7 @@
         phone:'Téléphone', call:'Appeler', serviceArea:'Zone de service', open:'Ouvrir', drawerTitle:'Votre rendez-vous', drawerSub:'Révisez les services et confirmez', close:'Fermer', appointmentInfo:'Informations du rendez-vous',
         preferredDate:'Date souhaitée', preferredTime:'Heure souhaitée', address:'Adresse du service', coupon:'Code promo', payment:'Paiement', tip:'Pourboire', notes:'Notes', placeAppointment:'Réserver',
         securePayment:'Paiement Interac', stayHere:'Rester ici', continuePayment:'Continuer au paiement', savingTitle:'Préparation du rendez-vous', savingText:'Vérification des services, prix et reçu.', footerText:'Réservations à domicile, QR de rendez-vous et reçus professionnels.',
-        all:'Tous', add:'Ajouter', added:'Service ajouté', emptyServices:'Aucun service disponible.', emptyCart:'Aucun service ajouté.', subtotal:'Sous-total', discount:'Rabais', travelFee:'Frais de déplacement', total:'Total',
+        all:'Tous', add:'Ajouter', added:'Service ajouté', emptyServices:'Aucun service disponible.', emptyCart:'Aucun service ajouté.', subtotal:'Sous-total', discount:'Rabais', travelFee:'Frais de déplacement', travelFeeHelp:'Inclus pour le service à domicile', availableTimes:'Heures disponibles', selectedTime:'Heure sélectionnée', total:'Total',
         loadingTimes:'Recherche des disponibilités...', noTimes:'Aucune disponibilité pour cette date.', chooseDateServices:'Sélectionnez services et date pour voir les heures.',
         noPromos:'Aucune promotion active.', noReviews:'Aucun avis approuvé pour le moment.', reviewThanks:'Merci. Votre avis a été reçu.', requiredCart:'Sélectionnez au moins un service.', requiredAddress:'L’adresse est requise.', requiredDate:'Sélectionnez date et heure.', requiredAgreement:'Acceptez les conditions.',
         appointmentReceived:'Rendez-vous reçu', appointmentId:'ID rendez-vous', qrTitle:'QR du rendez-vous', qrHelp:'Montrez ce QR lorsque la technicienne arrive.', paymentStatus:'Statut du paiement',
@@ -407,12 +410,50 @@
     function isActiveHour(value){
       return ['yes','true','1','active','activo','si','sí','oui','y'].indexOf(String(value || '').trim().toLowerCase()) !== -1;
     }
+    function timeToMinutes(value){
+      var raw = String(value == null ? '' : value).trim();
+      if(!raw) return -1;
+      var match = raw.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp]\.?[Mm]\.?)?$/);
+      if(!match) return -1;
+      var hour = Number(match[1]);
+      var minute = Number(match[2] || 0);
+      var suffix = (match[3] || '').replace(/\./g, '').toUpperCase();
+      if(minute < 0 || minute > 59) return -1;
+      if(suffix){
+        if(hour < 1 || hour > 12) return -1;
+        if(suffix === 'PM' && hour < 12) hour += 12;
+        if(suffix === 'AM' && hour === 12) hour = 0;
+      } else if(hour < 0 || hour > 23) {
+        return -1;
+      }
+      return hour * 60 + minute;
+    }
+    function formatTime12(value){
+      var minutes = timeToMinutes(value);
+      if(minutes < 0) return String(value || '').trim();
+      minutes = ((minutes % 1440) + 1440) % 1440;
+      var hour24 = Math.floor(minutes / 60);
+      var minute = minutes % 60;
+      var suffix = hour24 >= 12 ? 'PM' : 'AM';
+      var hour12 = hour24 % 12;
+      if(hour12 === 0) hour12 = 12;
+      return hour12 + ':' + String(minute).padStart(2, '0') + ' ' + suffix;
+    }
+    function sameTime(a, b){
+      var ma = timeToMinutes(a);
+      var mb = timeToMinutes(b);
+      return ma >= 0 && mb >= 0 && ma === mb;
+    }
+    function updateSelectedTimeLabel(){
+      if(!$('selectedTimeLabel')) return;
+      var value = $('preferredTime') ? $('preferredTime').value : '';
+      $('selectedTimeLabel').textContent = value ? t('selectedTime') + ': ' + formatTime12(value) : '';
+    }
     function renderAvailabilitySummary(){
       var hours = ((availability && availability.hours) || []).filter(function(row){ return isActiveHour(row.active) && row.open && row.close; });
       var html = hours.length
-        ? '<strong>' + t('openDays') + '</strong><div class="availability-chips">' + hours.map(function(row){ return '<span>' + RTApi.esc(row.day) + ' ' + RTApi.esc(row.open) + '-' + RTApi.esc(row.close) + '</span>'; }).join('') + '</div>'
+        ? '<strong>' + t('openDays') + '</strong><div class="availability-chips">' + hours.map(function(row){ return '<span>' + RTApi.esc(row.day) + ' ' + RTApi.esc(formatTime12(row.open)) + '-' + RTApi.esc(formatTime12(row.close)) + '</span>'; }).join('') + '</div>'
         : '<strong>' + t('openDays') + '</strong><p>' + t('noOpenDays') + '</p>';
-      if($('availabilitySummary')) $('availabilitySummary').innerHTML = html;
       if($('contactAvailability')) $('contactAvailability').innerHTML = html;
     }
     function renderPaymentHelp(){
@@ -558,10 +599,11 @@
         return '<div class="cart-line"><div><b>' + RTApi.esc(row.item.name) + '</b><span class="section-sub">' + RTApi.money(row.item.price) + '</span><div class="qty"><button type="button" onclick="qty(\'' + RTApi.esc(row.item.id) + '\', -1)">-</button><strong>' + row.qty + '</strong><button type="button" onclick="qty(\'' + RTApi.esc(row.item.id) + '\', 1)">+</button></div></div><strong>' + RTApi.money(Number(row.item.price || 0) * row.qty) + '</strong></div>';
       }).join('') || '<div class="empty">' + t('emptyCart') + '</div>';
       var totalLines = '<div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(totals.subtotal) + '</strong></div><div class="total-line"><span>' + t('discount') + '</span><strong>-' + RTApi.money(totals.discount) + '</strong></div>';
-      if(totals.travelFee > 0) totalLines += '<div class="total-line"><span>' + t('travelFee') + '</span><strong>' + RTApi.money(totals.travelFee) + '</strong></div>';
+      if(totals.travelFee > 0) totalLines += '<div class="total-line fee-line"><span>' + t('travelFee') + '<small>' + t('travelFeeHelp') + '</small></span><strong>' + RTApi.money(totals.travelFee) + '</strong></div>';
       if(totals.tip > 0) totalLines += '<div class="total-line"><span>' + t('tip') + '</span><strong>' + RTApi.money(totals.tip) + '</strong></div>';
       totalLines += '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(totals.total) + '</strong></div>';
       $('totals').innerHTML = totalLines;
+      updateSelectedTimeLabel();
       if($('preferredDate') && $('preferredDate').value) loadAvailableTimes();
     }
     async function loadAvailableTimes(){
@@ -572,6 +614,8 @@
       var items = payload();
       if(!date || !items.length){
         box.innerHTML = '<span class="slot-help">' + t('chooseDateServices') + '</span>';
+        if($('preferredTime')) $('preferredTime').value = '';
+        updateSelectedTimeLabel();
         return;
       }
       timeSlotsLoading = true;
@@ -585,11 +629,15 @@
             : t('noTimes');
           box.innerHTML = '<span class="slot-help">' + RTApi.esc(reason) + '</span>';
           $('preferredTime').value = '';
+          updateSelectedTimeLabel();
           return;
         }
         box.innerHTML = times.map(function(time){
-          return '<button class="time-chip ' + ($('preferredTime').value === time ? 'active' : '') + '" type="button" onclick="selectTimeSlot(\'' + RTApi.esc(time) + '\')">' + RTApi.esc(time) + '</button>';
+          var display = formatTime12(time);
+          var active = sameTime($('preferredTime').value, time) ? 'active' : '';
+          return '<button class="time-chip ' + active + '" type="button" data-time="' + RTApi.esc(display) + '" onclick="selectTimeSlot(this.getAttribute(\'data-time\'))">' + RTApi.esc(display) + '</button>';
         }).join('');
+        updateSelectedTimeLabel();
       } catch(error) {
         box.innerHTML = '<span class="slot-help">' + RTApi.esc(error.message || String(error)) + '</span>';
       } finally {
@@ -597,8 +645,10 @@
       }
     }
     function selectTimeSlot(time){
-      $('preferredTime').value = time;
-      document.querySelectorAll('.time-chip').forEach(function(btn){ btn.classList.toggle('active', btn.textContent.trim() === time); });
+      var display = formatTime12(time);
+      $('preferredTime').value = display;
+      document.querySelectorAll('.time-chip').forEach(function(btn){ btn.classList.toggle('active', sameTime(btn.getAttribute('data-time') || btn.textContent, display)); });
+      updateSelectedTimeLabel();
     }
     function openCart(){ $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false'); }
     function closeCart(){ $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true'); }
@@ -630,7 +680,7 @@
         customerEmail: $('cEmail').value,
         customerAddress: $('cAddress').value,
         preferredDate: $('preferredDate').value,
-        preferredTime: $('preferredTime').value,
+        preferredTime: formatTime12($('preferredTime').value),
         customerNotes: $('notes').value,
         coupon: $('coupon').value,
         paymentMethod: $('payMethod').value,
@@ -659,13 +709,14 @@
       var rows = (appointment.items || []).map(function(item){ return '<div class="cart-line"><span>' + RTApi.esc(item.quantity || 1) + 'x ' + RTApi.esc(currentLang === 'fr' ? (item.nameFr || item.name) : (item.nameEs || item.name)) + '</span><strong>' + RTApi.money(item.lineTotal) + '</strong></div>'; }).join('');
       var qr = appointment.qrUrl ? '<div class="card" style="margin-top:16px;text-align:center;"><h3>' + t('qrTitle') + '</h3><img src="' + RTApi.esc(appointment.qrUrl) + '" alt="QR" width="190" height="190" style="margin:auto;background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line);"><p class="section-sub">' + t('qrHelp') + '</p><p class="section-sub">Token: ' + RTApi.esc(appointment.qrToken || '') + '</p></div>' : '';
       var receiptTotals = '<div class="totals"><div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(appointment.subtotal) + '</strong></div><div class="total-line"><span>' + t('discount') + '</span><strong>-' + RTApi.money(appointment.discount) + '</strong></div>';
-      if(Number(appointment.travelFee || 0) > 0) receiptTotals += '<div class="total-line"><span>' + t('travelFee') + '</span><strong>' + RTApi.money(appointment.travelFee) + '</strong></div>';
+      if(Number(appointment.travelFee || 0) > 0) receiptTotals += '<div class="total-line fee-line"><span>' + t('travelFee') + '<small>' + t('travelFeeHelp') + '</small></span><strong>' + RTApi.money(appointment.travelFee) + '</strong></div>';
+      if(Number(appointment.tip || 0) > 0) receiptTotals += '<div class="total-line"><span>' + t('tip') + '</span><strong>' + RTApi.money(appointment.tip) + '</strong></div>';
       receiptTotals += '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(appointment.total) + '</strong></div></div>';
       var methodText = String(appointment.paymentMethod || '');
       var isCash = methodText.toLowerCase().indexOf('cash') !== -1;
       var isInterac = methodText.toLowerCase().indexOf('interac') !== -1 || methodText.toLowerCase().indexOf('transfer') !== -1;
       var paymentNote = !isCash ? '<div class="payment-help receipt-help">' + RTApi.esc(t('interacHelp')) + (cfg.email ? '<br><strong>' + RTApi.esc(cfg.email) + '</strong>' : '') + '</div>' : '';
-      $('receipt').innerHTML = '<div><span class="badge green">' + RTApi.esc(appointment.status || '') + '</span><h2>' + t('appointmentReceived') + '</h2><p class="section-sub">' + t('appointmentId') + ': <strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></p><div class="info-list"><div class="info-row"><span>' + t('preferredDate') + '</span><strong>' + RTApi.esc(appointment.preferredDate + ' ' + appointment.preferredTime) + '</strong></div><div class="info-row"><span>' + t('address') + '</span><strong>' + RTApi.esc(appointment.customerAddress || '') + '</strong></div></div><h3>' + t('servicesTitle') + '</h3>' + rows + receiptTotals + '<p class="section-sub">' + t('paymentStatus') + ': ' + RTApi.esc(appointment.paymentStatus || '') + '</p>' + paymentNote + qr + '</div>';
+      $('receipt').innerHTML = '<div><span class="badge green">' + RTApi.esc(appointment.status || '') + '</span><h2>' + t('appointmentReceived') + '</h2><p class="section-sub">' + t('appointmentId') + ': <strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></p><div class="info-list"><div class="info-row"><span>' + t('preferredDate') + '</span><strong>' + RTApi.esc(appointment.preferredDate + ' ' + formatTime12(appointment.preferredTime)) + '</strong></div><div class="info-row"><span>' + t('address') + '</span><strong>' + RTApi.esc(appointment.customerAddress || '') + '</strong></div></div><h3>' + t('servicesTitle') + '</h3>' + rows + receiptTotals + '<p class="section-sub">' + t('paymentStatus') + ': ' + RTApi.esc(appointment.paymentStatus || '') + '</p>' + paymentNote + qr + '</div>';
       $('payBtn').style.display = payments.enabled === 'Yes' && !isCash && (payments.link || isInterac) ? '' : 'none';
       $('payBtn').textContent = payments.buttonLabel || t('securePayment');
       $('receiptModal').classList.add('open');
