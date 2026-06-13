@@ -128,11 +128,16 @@
             <input id="serviceBeforeImage" type="hidden">
             <input id="serviceAfterImage" type="hidden">
             <div class="service-form-section photo-manager">
-              <div class="mini-section-head"><strong>Fotos y antes/despues</strong><span>Las imagenes se optimizan antes de subir para ahorrar espacio sin perder calidad.</span></div>
-              <div class="photo-upload-grid">
-                <label class="field"><span>Foto principal</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceImagePreview')"><img id="serviceImagePreview" class="preview-thumb" alt=""></label>
-                <label class="field"><span>Foto antes</span><input id="serviceBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceBeforePreview')"><img id="serviceBeforePreview" class="preview-thumb" alt=""></label>
-                <label class="field"><span>Foto despues</span><input id="serviceAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhotoFile(this, 'serviceAfterPreview')"><img id="serviceAfterPreview" class="preview-thumb" alt=""></label>
+              <div class="mini-section-head"><strong>Foto principal del servicio</strong><span>La imagen se puede recortar y ajustar antes de subir.</span></div>
+              <div class="image-editor">
+                <label class="field full"><span>Subir foto del servicio</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('serviceImageFile')"></label>
+                <div class="image-editor-controls">
+                  <label class="field"><span>Recorte</span><select id="serviceImageAspect" onchange="updateImageEditorPreview('serviceImageFile')"><option value="4:3">Servicio 4:3</option><option value="1:1">Cuadrada 1:1</option><option value="4:5">Retrato 4:5</option><option value="3:2">Galeria 3:2</option></select></label>
+                  <label class="field"><span>Enfoque</span><select id="serviceImageFocus" onchange="syncImageFocus('serviceImageFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Horizontal</span><input id="serviceImageOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('serviceImageFile')"></label>
+                  <label class="field"><span>Vertical</span><input id="serviceImageOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('serviceImageFile')"></label>
+                </div>
+                <img id="serviceImagePreview" class="preview-thumb editable-preview" alt="">
               </div>
             </div>
             <div id="serviceUploadStatus" class="section-sub"></div>
@@ -142,6 +147,46 @@
           <div class="card">
             <h2>Servicios activos</h2>
             <div id="servicesList" class="grid"></div>
+          </div>
+        </div>
+        <div class="grid grid-2 before-after-admin-grid">
+          <form id="beforeAfterForm" class="card" onsubmit="saveBeforeAfter(event)">
+            <div class="section-head compact">
+              <div>
+                <h2>Antes / despues</h2>
+                <p class="section-sub">Selecciona un servicio existente y sube las fotos antes y despues por separado.</p>
+              </div>
+              <button class="btn secondary" type="button" onclick="resetBeforeAfterForm()">Nuevo</button>
+            </div>
+            <input id="beforeAfterBeforeImage" type="hidden">
+            <input id="beforeAfterAfterImage" type="hidden">
+            <label class="field"><span>Servicio</span><select id="beforeAfterService" required onchange="loadBeforeAfterService(this.value)"></select></label>
+            <div class="before-after-editor-pair">
+              <div class="image-editor">
+                <label class="field full"><span>Foto antes</span><input id="beforeAfterBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('beforeAfterBeforeFile')"></label>
+                <div class="image-editor-controls">
+                  <label class="field"><span>Enfoque</span><select id="beforeAfterBeforeFocus" onchange="syncImageFocus('beforeAfterBeforeFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Horizontal</span><input id="beforeAfterBeforeOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterBeforeFile')"></label>
+                  <label class="field"><span>Vertical</span><input id="beforeAfterBeforeOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterBeforeFile')"></label>
+                </div>
+                <img id="beforeAfterBeforePreview" class="preview-thumb editable-preview portrait-preview" alt="">
+              </div>
+              <div class="image-editor">
+                <label class="field full"><span>Foto despues</span><input id="beforeAfterAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('beforeAfterAfterFile')"></label>
+                <div class="image-editor-controls">
+                  <label class="field"><span>Enfoque</span><select id="beforeAfterAfterFocus" onchange="syncImageFocus('beforeAfterAfterFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Horizontal</span><input id="beforeAfterAfterOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterAfterFile')"></label>
+                  <label class="field"><span>Vertical</span><input id="beforeAfterAfterOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterAfterFile')"></label>
+                </div>
+                <img id="beforeAfterAfterPreview" class="preview-thumb editable-preview portrait-preview" alt="">
+              </div>
+            </div>
+            <div id="beforeAfterStatus" class="section-sub"></div>
+            <div class="toolbar"><button class="btn" type="submit">Guardar antes/despues</button><button class="btn secondary" type="button" onclick="resetBeforeAfterImages()">Quitar fotos</button></div>
+          </form>
+          <div class="card">
+            <h2>Resultados antes/despues</h2>
+            <div id="beforeAfterAdminList" class="grid"></div>
           </div>
         </div>
         <div class="card photo-storage-card">
@@ -464,6 +509,7 @@
       renderDashboard();
       renderAppointments();
       renderServices();
+      renderBeforeAfterAdmin();
       renderPromos();
       renderReviews();
       renderAvailability();
@@ -723,8 +769,26 @@
     function renderServices(){
       var list = adminData.services || [];
       $('servicesList').innerHTML = list.map(function(item){
-        return '<div class="extra-row"><div><strong>' + RTApi.esc(item.category + ' - ' + item.name) + '</strong><br><span class="section-sub">' + RTApi.money(item.price) + ' | ' + RTApi.esc(item.available) + '</span></div><div class="toolbar"><button class="btn secondary" type="button" onclick="editService(\'' + item.rowNumber + '\')">Editar</button><button class="btn secondary" type="button" onclick="toggleService(\'' + RTApi.esc(item.id) + '\')">On/Off</button></div></div>';
+        var hasBeforeAfter = item.beforeImage && item.afterImage ? ' | Antes/despues listo' : '';
+        return '<div class="extra-row service-admin-row"><div><strong>' + RTApi.esc(item.category + ' - ' + item.name) + '</strong><br><span class="section-sub">' + RTApi.money(item.price) + ' | ' + RTApi.esc(item.available) + hasBeforeAfter + '</span></div><div class="toolbar"><button class="btn secondary" type="button" onclick="editService(\'' + item.rowNumber + '\')">Editar servicio</button><button class="btn secondary" type="button" onclick="editBeforeAfter(\'' + item.rowNumber + '\')">Antes/despues</button><button class="btn secondary" type="button" onclick="toggleService(\'' + RTApi.esc(item.id) + '\')">On/Off</button></div></div>';
       }).join('') || '<div class="empty">No hay servicios.</div>';
+    }
+    function renderBeforeAfterAdmin(){
+      var list = adminData.services || [];
+      var select = $('beforeAfterService');
+      if(select){
+        var selected = select.value;
+        select.innerHTML = '<option value="">Selecciona un servicio</option>' + list.map(function(item){
+          return '<option value="' + RTApi.esc(item.rowNumber) + '">' + RTApi.esc(item.category + ' - ' + item.name) + '</option>';
+        }).join('');
+        if(selected && list.some(function(item){ return String(item.rowNumber) === String(selected); })) select.value = selected;
+      }
+      var pairs = list.filter(function(item){ return item.beforeImage || item.afterImage; });
+      $('beforeAfterAdminList').innerHTML = pairs.map(function(item){
+        var before = item.beforeImage ? '<img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes" onerror="this.remove()">' : '<div class="before-after-missing">Sin antes</div>';
+        var after = item.afterImage ? '<img src="' + RTApi.esc(item.afterImage) + '" alt="Despues" onerror="this.remove()">' : '<div class="before-after-missing">Sin despues</div>';
+        return '<div class="before-after-admin-item"><div><strong>' + RTApi.esc(item.category + ' - ' + item.name) + '</strong><br><span class="section-sub">' + RTApi.esc(item.beforeImage && item.afterImage ? 'Par completo' : 'Falta una foto') + '</span></div><div class="before-after-admin-preview">' + before + after + '</div><div class="toolbar"><button class="btn secondary" type="button" onclick="editBeforeAfter(\'' + item.rowNumber + '\')">Editar</button><button class="btn danger" type="button" onclick="clearBeforeAfter(\'' + item.rowNumber + '\')">Borrar</button></div></div>';
+      }).join('') || '<div class="empty">No hay resultados antes/despues todavia. Selecciona un servicio y sube las dos fotos.</div>';
     }
     function editService(rowNumber){
       var item = (adminData.services || []).find(function(service){ return String(service.rowNumber) === String(rowNumber); });
@@ -742,9 +806,7 @@
       $('serviceImage').value = item.image;
       $('serviceBeforeImage').value = item.beforeImage || '';
       $('serviceAfterImage').value = item.afterImage || '';
-      setPreview('serviceImagePreview', item.image);
-      setPreview('serviceBeforePreview', item.beforeImage);
-      setPreview('serviceAfterPreview', item.afterImage);
+      resetPhotoEditor('serviceImageFile', item.image, true);
       $('serviceAvailable').value = item.available || 'Yes';
     }
     function resetServiceForm(){
@@ -756,9 +818,7 @@
       $('serviceAfterImage').value = '';
       $('serviceOrder').value = 1;
       $('serviceDuration').value = 60;
-      setPreview('serviceImagePreview', '');
-      setPreview('serviceBeforePreview', '');
-      setPreview('serviceAfterPreview', '');
+      resetPhotoEditor('serviceImageFile', '', true);
       $('serviceUploadStatus').textContent = '';
     }
     async function saveService(event){
@@ -767,7 +827,7 @@
       var previousLabel = submitButton ? submitButton.textContent : '';
       if(submitButton){ submitButton.disabled = true; submitButton.textContent = 'Guardando...'; }
       try {
-        await uploadServicePhotosIfNeeded();
+        await uploadPhotoEditorIfNeeded('serviceImageFile', 'serviceImage', 'serviceUploadStatus', 'principal', 'service-main');
         var service = { rowNumber:$('serviceRow').value, id:$('serviceId').value, category:$('serviceCategory').value, name:$('serviceName').value, nameFr:$('serviceNameFr').value, description:$('serviceDescription').value, descriptionFr:$('serviceDescriptionFr').value, price:$('servicePrice').value, durationMinutes:$('serviceDuration').value, order:$('serviceOrder').value, image:$('serviceImage').value, beforeImage:$('serviceBeforeImage').value, afterImage:$('serviceAfterImage').value, available:$('serviceAvailable').value, taxable:'No' };
         await adminCall('saveService', { service:service });
         resetServiceForm();
@@ -782,6 +842,106 @@
       finally {
         if(submitButton){ submitButton.disabled = false; submitButton.textContent = previousLabel || 'Guardar servicio'; }
       }
+    }
+    function loadBeforeAfterService(rowNumber){
+      var item = findServiceByRow(rowNumber);
+      if(!item){
+        $('beforeAfterBeforeImage').value = '';
+        $('beforeAfterAfterImage').value = '';
+        resetPhotoEditor('beforeAfterBeforeFile', '', true);
+        resetPhotoEditor('beforeAfterAfterFile', '', true);
+        return;
+      }
+      $('beforeAfterBeforeImage').value = item.beforeImage || '';
+      $('beforeAfterAfterImage').value = item.afterImage || '';
+      resetPhotoEditor('beforeAfterBeforeFile', item.beforeImage || '', true);
+      resetPhotoEditor('beforeAfterAfterFile', item.afterImage || '', true);
+      $('beforeAfterStatus').textContent = '';
+    }
+    function editBeforeAfter(rowNumber){
+      showPanel('services');
+      $('beforeAfterService').value = rowNumber;
+      loadBeforeAfterService(rowNumber);
+      $('beforeAfterForm').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+    function resetBeforeAfterForm(){
+      $('beforeAfterForm').reset();
+      $('beforeAfterService').value = '';
+      $('beforeAfterBeforeImage').value = '';
+      $('beforeAfterAfterImage').value = '';
+      resetPhotoEditor('beforeAfterBeforeFile', '', true);
+      resetPhotoEditor('beforeAfterAfterFile', '', true);
+      $('beforeAfterStatus').textContent = '';
+    }
+    function resetBeforeAfterImages(){
+      $('beforeAfterBeforeImage').value = '';
+      $('beforeAfterAfterImage').value = '';
+      resetPhotoEditor('beforeAfterBeforeFile', '', true);
+      resetPhotoEditor('beforeAfterAfterFile', '', true);
+      $('beforeAfterStatus').textContent = 'Las fotos se quitaran cuando guardes este antes/despues.';
+    }
+    async function saveBeforeAfter(event){
+      event.preventDefault();
+      var rowNumber = $('beforeAfterService').value;
+      var item = findServiceByRow(rowNumber);
+      if(!item){ toast('Selecciona un servicio existente.'); return; }
+      var submitButton = event.target.querySelector('button[type="submit"]');
+      var previousLabel = submitButton ? submitButton.textContent : '';
+      if(submitButton){ submitButton.disabled = true; submitButton.textContent = 'Guardando...'; }
+      try {
+        await uploadPhotoEditorIfNeeded('beforeAfterBeforeFile', 'beforeAfterBeforeImage', 'beforeAfterStatus', 'antes', 'service-before');
+        await uploadPhotoEditorIfNeeded('beforeAfterAfterFile', 'beforeAfterAfterImage', 'beforeAfterStatus', 'despues', 'service-after');
+        var service = servicePayloadFromItem(item, {
+          beforeImage:$('beforeAfterBeforeImage').value,
+          afterImage:$('beforeAfterAfterImage').value
+        });
+        await adminCall('saveService', { service:service });
+        await refreshAll();
+        resetBeforeAfterForm();
+        toast('Antes/despues guardado');
+      }
+      catch(error){
+        var message = error.message || String(error);
+        $('beforeAfterStatus').textContent = message;
+        toast(message);
+      }
+      finally {
+        if(submitButton){ submitButton.disabled = false; submitButton.textContent = previousLabel || 'Guardar antes/despues'; }
+      }
+    }
+    async function clearBeforeAfter(rowNumber){
+      var item = findServiceByRow(rowNumber);
+      if(!item) return;
+      var ok = await confirmAction('Borrar antes/despues', 'Se quitaran las fotos antes/despues de este servicio. Las fotos subidas quedaran como no usadas para que puedas borrarlas desde almacenamiento.');
+      if(!ok) return;
+      try {
+        await adminCall('saveService', { service:servicePayloadFromItem(item, { beforeImage:'', afterImage:'' }) });
+        await refreshAll();
+        toast('Antes/despues borrado');
+      } catch(error) { toast(error.message || String(error)); }
+    }
+    function findServiceByRow(rowNumber){
+      return (adminData.services || []).find(function(service){ return String(service.rowNumber) === String(rowNumber); });
+    }
+    function servicePayloadFromItem(item, overrides){
+      return Object.assign({
+        rowNumber:item.rowNumber,
+        id:item.id,
+        category:item.category,
+        name:item.name,
+        nameFr:item.nameFr,
+        description:item.description,
+        descriptionFr:item.descriptionFr,
+        price:item.price,
+        durationMinutes:item.durationMinutes,
+        order:item.order === 9999 ? '' : item.order,
+        image:item.image,
+        beforeImage:item.beforeImage || '',
+        afterImage:item.afterImage || '',
+        available:item.available || 'Yes',
+        taxable:item.taxable || 'No',
+        notes:item.notes || ''
+      }, overrides || {});
     }
     async function toggleService(id){ try { await adminCall('toggleService', { id:id }); await refreshAll(); } catch(error){ toast(error.message || String(error)); } }
     async function loadPhotoStorage(){
@@ -818,52 +978,111 @@
       image.src = url || '';
       image.style.display = url ? 'block' : 'none';
     }
-    function previewPhotoFile(input, previewId){
+    var photoEditors = {
+      serviceImageFile:{ file:null, preview:'serviceImagePreview', aspect:'serviceImageAspect', focus:'serviceImageFocus', x:'serviceImageOffsetX', y:'serviceImageOffsetY', defaultAspect:'4:3' },
+      beforeAfterBeforeFile:{ file:null, preview:'beforeAfterBeforePreview', focus:'beforeAfterBeforeFocus', x:'beforeAfterBeforeOffsetX', y:'beforeAfterBeforeOffsetY', defaultAspect:'4:5' },
+      beforeAfterAfterFile:{ file:null, preview:'beforeAfterAfterPreview', focus:'beforeAfterAfterFocus', x:'beforeAfterAfterOffsetX', y:'beforeAfterAfterOffsetY', defaultAspect:'4:5' }
+    };
+    function handlePhotoEditorFile(inputId){
+      var config = photoEditors[inputId];
+      var input = $(inputId);
+      if(!config || !input) return;
       var file = input.files && input.files[0];
-      if(!file){ setPreview(previewId, ''); return; }
-      optimizeImageFile(file).then(function(result){
-        setPreview(previewId, result.dataUrl);
-      }).catch(function(){
-        var reader = new FileReader();
-        reader.onload = function(){ setPreview(previewId, reader.result); };
-        reader.readAsDataURL(file);
-      });
-    }
-    async function uploadServicePhotosIfNeeded(){
-      var jobs = [
-        { input:'serviceImageFile', target:'serviceImage', label:'principal' },
-        { input:'serviceBeforeFile', target:'serviceBeforeImage', label:'antes' },
-        { input:'serviceAfterFile', target:'serviceAfterImage', label:'despues' }
-      ];
-      for(var i = 0; i < jobs.length; i++){
-        var job = jobs[i];
-        var input = $(job.input);
-        var file = input && input.files && input.files[0];
-        if(!file) continue;
-        $('serviceUploadStatus').innerHTML = '<span class="loading-inline"></span>Optimizando foto ' + job.label + '...';
-        var optimized = await optimizeImageFile(file);
-        $('serviceUploadStatus').innerHTML = '<span class="loading-inline"></span>Subiendo foto ' + job.label + ' (' + optimized.sizeLabel + ')...';
-        var result = await adminBridgeCall('uploadImage', { dataUrl:optimized.dataUrl, fileName:optimized.fileName, context:'service-' + job.label });
-        $(job.target).value = result.url;
+      config.file = null;
+      if(!file){
+        setPreview(config.preview, '');
+        return;
       }
-      $('serviceUploadStatus').textContent = '';
+      if(['image/jpeg','image/png','image/webp'].indexOf(file.type) === -1){
+        input.value = '';
+        setPreview(config.preview, '');
+        toast('Usa una imagen JPG, PNG o WebP.');
+        return;
+      }
+      config.file = file;
+      var reader = new FileReader();
+      reader.onload = function(){ setPreview(config.preview, reader.result); updateImageEditorPreview(inputId); };
+      reader.onerror = function(){ toast('No se pudo leer la imagen.'); };
+      reader.readAsDataURL(file);
     }
-    function fileToDataUrl(file){
-      return optimizeImageFile(file).then(function(result){ return result.dataUrl; });
+    function resetPhotoEditor(inputId, imageUrl, clearInput){
+      var config = photoEditors[inputId];
+      if(!config) return;
+      config.file = null;
+      if(clearInput && $(inputId)) $(inputId).value = '';
+      if($(config.x)) $(config.x).value = 50;
+      if($(config.y)) $(config.y).value = 50;
+      if($(config.focus)) $(config.focus).value = 'center';
+      setPreview(config.preview, imageUrl || '');
+      updateImageEditorPreview(inputId);
     }
-    function optimizeImageFile(file){
+    function syncImageFocus(inputId){
+      var config = photoEditors[inputId];
+      if(!config) return;
+      var focus = $(config.focus) ? $(config.focus).value : 'center';
+      if($(config.x)) $(config.x).value = 50;
+      if($(config.y)) $(config.y).value = focus === 'top' ? 0 : focus === 'bottom' ? 100 : 50;
+      updateImageEditorPreview(inputId);
+    }
+    function updateImageEditorPreview(inputId){
+      var config = photoEditors[inputId];
+      if(!config) return;
+      var preview = $(config.preview);
+      if(!preview) return;
+      preview.style.aspectRatio = aspectToCss(getEditorAspect(inputId));
+      preview.style.objectPosition = (($(config.x) && $(config.x).value) || 50) + '% ' + (($(config.y) && $(config.y).value) || 50) + '%';
+    }
+    function getEditorAspect(inputId){
+      var config = photoEditors[inputId] || {};
+      return (config.aspect && $(config.aspect) && $(config.aspect).value) || config.defaultAspect || '4:5';
+    }
+    function aspectToCss(value){
+      var parts = String(value || '4:5').split(':');
+      return (Number(parts[0]) || 4) + ' / ' + (Number(parts[1]) || 5);
+    }
+    async function uploadPhotoEditorIfNeeded(inputId, targetId, statusId, label, context){
+      var config = photoEditors[inputId];
+      if(!config || !config.file) return;
+      $(statusId).innerHTML = '<span class="loading-inline"></span>Preparando foto ' + label + '...';
+      var edited = await cropEditedImage(
+        config.file,
+        getEditorAspect(inputId),
+        Number(($(config.x) && $(config.x).value) || 50),
+        Number(($(config.y) && $(config.y).value) || 50)
+      );
+      $(statusId).innerHTML = '<span class="loading-inline"></span>Subiendo foto ' + label + ' (' + edited.sizeLabel + ')...';
+      var result = await adminBridgeCall('uploadImage', { dataUrl:edited.dataUrl, fileName:edited.fileName, context:context || ('service-' + label) });
+      $(targetId).value = result.url;
+      resetPhotoEditor(inputId, result.url, true);
+      $(statusId).textContent = '';
+    }
+    function cropEditedImage(file, aspectValue, offsetXPercent, offsetYPercent){
       return new Promise(function(resolve, reject){
         var reader = new FileReader();
         reader.onload = function(){
           var image = new Image();
           image.onload = function(){
             try {
+              var aspect = String(aspectValue || '4:5').split(':').map(Number);
+              var targetRatio = (aspect[0] || 4) / (aspect[1] || 5);
+              var imageRatio = image.naturalWidth / image.naturalHeight;
+              var cropWidth = image.naturalWidth;
+              var cropHeight = image.naturalHeight;
+              var cropX = 0;
+              var cropY = 0;
+              var offsetX = Math.max(0, Math.min(1, Number(offsetXPercent || 50) / 100));
+              var offsetY = Math.max(0, Math.min(1, Number(offsetYPercent || 50) / 100));
+              if(imageRatio > targetRatio){
+                cropWidth = cropHeight * targetRatio;
+                cropX = (image.naturalWidth - cropWidth) * offsetX;
+              } else {
+                cropHeight = cropWidth / targetRatio;
+                cropY = (image.naturalHeight - cropHeight) * offsetY;
+              }
               var maxSide = 1400;
-              var width = image.naturalWidth || image.width;
-              var height = image.naturalHeight || image.height;
-              var scale = Math.min(1, maxSide / Math.max(width, height));
-              var targetWidth = Math.max(1, Math.round(width * scale));
-              var targetHeight = Math.max(1, Math.round(height * scale));
+              var scale = Math.min(1, maxSide / Math.max(cropWidth, cropHeight));
+              var targetWidth = Math.max(1, Math.round(cropWidth * scale));
+              var targetHeight = Math.max(1, Math.round(cropHeight * scale));
               var canvas = document.createElement('canvas');
               canvas.width = targetWidth;
               canvas.height = targetHeight;
@@ -872,7 +1091,7 @@
               ctx.imageSmoothingQuality = 'high';
               ctx.fillStyle = '#fff';
               ctx.fillRect(0, 0, targetWidth, targetHeight);
-              ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+              ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, targetWidth, targetHeight);
               var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
               resolve({
                 dataUrl:dataUrl,
