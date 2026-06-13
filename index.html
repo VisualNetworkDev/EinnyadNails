@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails</title>
   <meta name="theme-color" content="#2d131e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="EinnyadNails">
-  <link rel="manifest" href="manifest-client.webmanifest?v=einnyadnails-v11">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v11">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v11">
-  <script src="assets/config.js?v=einnyadnails-v11"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v11" defer></script>
-  <script src="assets/app-intro.js?v=einnyadnails-v11"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v13">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v13">
+  <script src="assets/config.js?v=einnyadnails-web-v13"></script>
+  <script src="assets/app-intro.js?v=einnyadnails-web-v13"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
@@ -33,13 +27,13 @@
       </a>
       <nav class="navlinks" aria-label="Menu principal">
         <button class="active" type="button" data-section="services" data-i18n="navServices" onclick="showSection('services', this)">Servicios</button>
+        <button type="button" data-section="before-after" data-i18n="navBeforeAfter" onclick="showSection('before-after', this)">Antes/despues</button>
         <button type="button" data-section="offers" data-i18n="navOffers" onclick="showSection('offers', this)">Promos</button>
         <button type="button" data-section="about" data-i18n="navAbout" onclick="showSection('about', this)">Sobre mi</button>
         <button type="button" data-section="reviews" data-i18n="navReviews" onclick="showSection('reviews', this)">Reseñas</button>
         <button type="button" data-section="contact" data-i18n="navContact" onclick="showSection('contact', this)">Contacto</button>
         <a id="igTopLink" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
         <button type="button" onclick="setLanguage(currentLang === 'es' ? 'fr' : 'es')"><span id="langLabel">FR</span></button>
-        <button class="btn secondary" type="button" data-install-app onclick="RTPWA.install()" style="display:none;" data-i18n="install">Instalar</button>
         <button class="btn secondary" type="button" onclick="openCart()"><span data-i18n="cart">Reserva</span> <span id="cartCount">0</span></button>
       </nav>
     </div>
@@ -74,11 +68,14 @@
       </div>
       <div id="catTabs" class="category-row"></div>
       <div id="servicesGrid" class="services-grid"></div>
-      <div id="beforeAfterSection" class="before-after-section" style="display:none;">
+    </section>
+
+    <section id="client-before-after" class="client-section section">
+      <div id="beforeAfterSection" class="before-after-section">
         <div class="section-head">
           <div>
-            <h2 class="section-title">Antes y después</h2>
-            <p class="section-sub">Resultados reales organizados por servicio.</p>
+            <h2 class="section-title" data-i18n="beforeAfterTitle">Antes y despues</h2>
+            <p class="section-sub" data-i18n="beforeAfterText">Resultados reales organizados por servicio.</p>
           </div>
         </div>
         <div id="beforeAfterGrid" class="before-after-grid"></div>
@@ -184,7 +181,7 @@
           <label class="field"><span>Email</span><input id="cEmail" type="email" autocomplete="email"></label>
           <div class="split">
             <label class="field"><span data-i18n="coupon">Cupón</span><input id="coupon" oninput="renderCart()"></label>
-            <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option>Interac e-Transfer</option><option>Cash</option><option>Payment link</option></select></label>
+            <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option value="Interac e-Transfer">Interac e-Transfer</option><option value="Cash">Cash</option><option value="Payment link">Payment link</option></select></label>
           </div>
           <div id="paymentHelp" class="payment-help"></div>
           <label class="field"><span data-i18n="tip">Propina</span><input id="tip" type="number" min="0" step="0.01" value="0" oninput="renderCart()"></label>
@@ -255,10 +252,12 @@
     var spotlightIndex = 0;
     var spotlightTimer = null;
     var currentLang = localStorage.getItem('en_lang') || (navigator.language && navigator.language.toLowerCase().indexOf('fr') === 0 ? 'fr' : 'es');
+    var loadedLang = '';
+    var languageReloadTimer = null;
 
     var copy = {
       es: {
-        subtitle:'Uñas a domicilio', navServices:'Servicios', navOffers:'Promos', navAbout:'Sobre mí', navReviews:'Reseñas', navContact:'Contacto', install:'Instalar', cart:'Reserva',
+        subtitle:'Uñas a domicilio', navServices:'Servicios', navBeforeAfter:'Antes/despues', navOffers:'Promos', navAbout:'Sobre mí', navReviews:'Reseñas', navContact:'Contacto', install:'Instalar', cart:'Reserva',
         heroPill:'Servicio de uñas a domicilio', heroTitle:'Uñas elegantes sin salir de casa.', heroText:'Reserva manicure, gel, acrílicas, pedicure o nail art. Recibes un QR para verificar la cita cuando la técnica llegue.', selected:'En reserva',
         reserveNow:'Reservar cita', seePromos:'Ver promociones', servicesTitle:'Servicios', servicesText:'Selecciona los servicios que quieres reservar. Puedes agregar más de uno antes de confirmar.',
         offersTitle:'Promociones', offersText:'Ofertas activas configuradas por EinnyadNails.', aboutBadge:'Sobre EinnyadNails', aboutTitle:'Belleza de uñas con detalle.',
@@ -271,10 +270,11 @@
         loadingTimes:'Buscando horarios disponibles...', noTimes:'No hay horarios disponibles para esa fecha.', chooseDateServices:'Selecciona servicios y fecha para ver horarios.',
         noPromos:'No hay promociones activas ahora.', noReviews:'Todavía no hay reseñas aprobadas.', reviewThanks:'Gracias. Tu reseña fue recibida.', requiredCart:'Selecciona al menos un servicio.', requiredAddress:'La dirección es requerida.', requiredDate:'Selecciona fecha y hora.', requiredAgreement:'Acepta el acuerdo de servicio.',
         appointmentReceived:'Cita recibida', appointmentId:'ID de cita', qrTitle:'QR de cita', qrHelp:'Muestra este QR cuando la técnica llegue para verificar la cita.', paymentStatus:'Estado de pago',
-        openDays:'Días abiertos', interacHelp:'Pago por Interac e-Transfer. La cita queda confirmada cuando la dueña verifica el recibo del dinero.', noOpenDays:'No hay horarios públicos configurados.'
+        openDays:'Días abiertos', interacHelp:'Pago por Interac e-Transfer. La cita queda confirmada cuando la dueña verifica el recibo del dinero.', noOpenDays:'No hay horarios públicos configurados.',
+        beforeAfterTitle:'Antes y despues', beforeAfterText:'Resultados reales organizados por servicio.', before:'Antes', after:'Despues', emptyBeforeAfter:'Todavia no hay fotos de antes y despues.'
       },
       fr: {
-        subtitle:'Ongles à domicile', navServices:'Services', navOffers:'Promos', navAbout:'À propos', navReviews:'Avis', navContact:'Contact', install:'Installer', cart:'Rendez-vous',
+        subtitle:'Ongles à domicile', navServices:'Services', navBeforeAfter:'Avant/apres', navOffers:'Promos', navAbout:'À propos', navReviews:'Avis', navContact:'Contact', install:'Installer', cart:'Rendez-vous',
         heroPill:'Service d’ongles à domicile', heroTitle:'Des ongles élégants sans sortir.', heroText:'Réservez manucure, gel, acrylique, pédicure ou nail art. Vous recevez un QR pour vérifier le rendez-vous à l’arrivée.', selected:'Ajouté',
         reserveNow:'Réserver', seePromos:'Voir promos', servicesTitle:'Services', servicesText:'Sélectionnez les services à réserver. Vous pouvez en ajouter plusieurs avant de confirmer.',
         offersTitle:'Promotions', offersText:'Promotions actives configurées par EinnyadNails.', aboutBadge:'À propos', aboutTitle:'Beauté des ongles avec détail.',
@@ -287,7 +287,8 @@
         loadingTimes:'Recherche des disponibilités...', noTimes:'Aucune disponibilité pour cette date.', chooseDateServices:'Sélectionnez services et date pour voir les heures.',
         noPromos:'Aucune promotion active.', noReviews:'Aucun avis approuvé pour le moment.', reviewThanks:'Merci. Votre avis a été reçu.', requiredCart:'Sélectionnez au moins un service.', requiredAddress:'L’adresse est requise.', requiredDate:'Sélectionnez date et heure.', requiredAgreement:'Acceptez les conditions.',
         appointmentReceived:'Rendez-vous reçu', appointmentId:'ID rendez-vous', qrTitle:'QR du rendez-vous', qrHelp:'Montrez ce QR lorsque la technicienne arrive.', paymentStatus:'Statut du paiement',
-        openDays:'Jours ouverts', interacHelp:'Paiement par Interac e-Transfer. Le rendez-vous est confirmé lorsque la propriétaire vérifie le reçu du paiement.', noOpenDays:'Aucun horaire public configuré.'
+        openDays:'Jours ouverts', interacHelp:'Paiement par Interac e-Transfer. Le rendez-vous est confirmé lorsque la propriétaire vérifie le reçu du paiement.', noOpenDays:'Aucun horaire public configuré.',
+        beforeAfterTitle:'Avant et apres', beforeAfterText:'Resultats reels organises par service.', before:'Avant', after:'Apres', emptyBeforeAfter:'Aucune photo avant/apres pour le moment.'
       }
     };
 
@@ -301,6 +302,7 @@
       document.documentElement.lang = currentLang === 'fr' ? 'fr-CA' : 'es';
       $('langLabel').textContent = currentLang === 'es' ? 'FR' : 'ES';
       document.querySelectorAll('[data-i18n]').forEach(function(node){ node.textContent = t(node.getAttribute('data-i18n')); });
+      syncPaymentOptions();
       $('agreementCopy').textContent = currentLang === 'fr' ? (cfg.agreementTextFr || cfg.agreementText || '') : (cfg.agreementTextEs || cfg.agreementText || '');
       renderPolicyBox();
       renderCats();
@@ -312,6 +314,7 @@
       renderSpotlight();
       renderAvailabilitySummary();
       renderPaymentHelp();
+      queueLanguageReload();
     }
 
     async function init(){
@@ -322,13 +325,15 @@
       if($('payMethod')) $('payMethod').addEventListener('change', renderPaymentHelp);
       setLanguage(currentLang);
       try {
+        var initLang = currentLang;
         var result = await Promise.all([
-          RTApi.client('getSalonConfig', { language: currentLang }),
-          RTApi.client('getServices', { language: currentLang })
+          RTApi.client('getSalonConfig', { language: initLang }),
+          RTApi.client('getServices', { language: initLang })
         ]);
         cfg = result[0] || {};
         services = (result[1] && (result[1].services || result[1].items)) || [];
         cats = ['All'].concat((result[1] && result[1].categories) || []);
+        loadedLang = initLang;
         applyConfig();
         renderCats();
         renderServices();
@@ -340,6 +345,43 @@
         $('servicesGrid').innerHTML = '<div class="empty">API URL no configurada o no disponible.</div>';
       } finally {
         if(window.RTIntro) RTIntro.hide(220);
+      }
+    }
+
+    function queueLanguageReload(){
+      if(!loadedLang || loadedLang === currentLang) return;
+      if(languageReloadTimer) clearTimeout(languageReloadTimer);
+      languageReloadTimer = setTimeout(reloadLanguageData, 80);
+    }
+
+    async function reloadLanguageData(){
+      languageReloadTimer = null;
+      var targetLang = currentLang;
+      try {
+        var result = await Promise.all([
+          RTApi.client('getSalonConfig', { language: targetLang }),
+          RTApi.client('getServices', { language: targetLang }),
+          RTApi.client('getPromotions', { language: targetLang }).catch(function(){ return []; }),
+          RTApi.client('getPaymentsConfig', { language: targetLang }).catch(function(){ return payments || {}; })
+        ]);
+        if(targetLang !== currentLang){ queueLanguageReload(); return; }
+        cfg = result[0] || cfg;
+        services = (result[1] && (result[1].services || result[1].items)) || [];
+        cats = ['All'].concat((result[1] && result[1].categories) || []);
+        promos = normalizePromos(result[2]);
+        payments = result[3] || payments || { enabled:'No' };
+        loadedLang = targetLang;
+        applyConfig();
+        renderCats();
+        renderServices();
+        renderBeforeAfter();
+        renderOffers();
+        renderCart();
+        renderPaymentHelp();
+        renderSpotlight();
+        renderAvailabilitySummary();
+      } catch(error) {
+        toast(error.message || String(error));
       }
     }
 
@@ -456,11 +498,21 @@
         : '<strong>' + t('openDays') + '</strong><p>' + t('noOpenDays') + '</p>';
       if($('contactAvailability')) $('contactAvailability').innerHTML = html;
     }
+    function syncPaymentOptions(){
+      var select = $('payMethod');
+      if(!select) return;
+      var labels = currentLang === 'fr'
+        ? ['Interac e-Transfer', 'Paiement en personne', 'Lien de paiement']
+        : ['Interac e-Transfer', 'Pago en persona', 'Enlace de pago'];
+      Array.prototype.forEach.call(select.options, function(option, index){
+        if(labels[index]) option.textContent = labels[index];
+      });
+    }
     function renderPaymentHelp(){
       if(!$('paymentHelp')) return;
       var method = $('payMethod') ? $('payMethod').value : '';
-      var text = t('interacHelp');
-      if(String(method).toLowerCase().indexOf('cash') !== -1) text = currentLang === 'fr' ? 'Paiement en personne à la fin du service.' : 'Pago en persona al finalizar el servicio.';
+      var text = payments.redirectMessage || t('interacHelp');
+      if(String(method).toLowerCase().indexOf('cash') !== -1) text = payments.cashInstructions || (currentLang === 'fr' ? 'Paiement en personne a la fin du service.' : 'Pago en persona al finalizar el servicio.');
       $('paymentHelp').textContent = text;
     }
     function renderPolicyBox(){
@@ -469,8 +521,8 @@
       var fallbackDepositEs = 'Si se activa deposito o pago online, la cita queda confirmada cuando el pago sea validado.';
       var fallbackCancelFr = 'Vous pouvez demander un changement ou une annulation au moins 24 heures a l avance.';
       var fallbackDepositFr = 'Si un depot ou paiement en ligne est active, le rendez-vous est confirme lorsque le paiement est valide.';
-      var cancellation = currentLang === 'fr' ? (cfg.cancellationPolicyFr || cfg.cancellationPolicyEs || fallbackCancelFr) : (cfg.cancellationPolicyEs || fallbackCancelEs);
-      var deposit = currentLang === 'fr' ? (cfg.depositPolicyFr || cfg.depositPolicyEs || fallbackDepositFr) : (cfg.depositPolicyEs || fallbackDepositEs);
+      var cancellation = currentLang === 'fr' ? (cfg.cancellationPolicyFr || fallbackCancelFr) : (cfg.cancellationPolicyEs || fallbackCancelEs);
+      var deposit = currentLang === 'fr' ? (cfg.depositPolicyFr || fallbackDepositFr) : (cfg.depositPolicyEs || fallbackDepositEs);
       $('policyBox').innerHTML = '<strong>' + (currentLang === 'fr' ? 'Conditions de rendez-vous' : 'Politicas de la cita') + '</strong>' + (cancellation ? '<p>' + RTApi.esc(cancellation) + '</p>' : '') + (deposit ? '<p>' + RTApi.esc(deposit) + '</p>' : '');
     }
 
@@ -508,11 +560,13 @@
     }
     function renderBeforeAfter(){
       var pairs = services.filter(function(item){ return item.beforeImage && item.afterImage; });
-      var section = $('beforeAfterSection');
-      if(!section) return;
-      section.style.display = pairs.length ? '' : 'none';
+      if(!$('beforeAfterGrid')) return;
+      if(!pairs.length){
+        $('beforeAfterGrid').innerHTML = '<div class="empty">' + RTApi.esc(t('emptyBeforeAfter')) + '</div>';
+        return;
+      }
       $('beforeAfterGrid').innerHTML = pairs.map(function(item){
-        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes" loading="lazy" decoding="async"><figcaption>Antes</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="Después" loading="lazy" decoding="async"><figcaption>Después</figcaption></figure></div></article>';
+        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="' + RTApi.esc(t('before') + ' - ' + (item.name || '')) + '" loading="lazy" decoding="async"><figcaption>' + RTApi.esc(t('before')) + '</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="' + RTApi.esc(t('after') + ' - ' + (item.name || '')) + '" loading="lazy" decoding="async"><figcaption>' + RTApi.esc(t('after')) + '</figcaption></figure></div></article>';
       }).join('');
     }
     function renderOffers(){
@@ -715,16 +769,16 @@
       var methodText = String(appointment.paymentMethod || '');
       var isCash = methodText.toLowerCase().indexOf('cash') !== -1;
       var isInterac = methodText.toLowerCase().indexOf('interac') !== -1 || methodText.toLowerCase().indexOf('transfer') !== -1;
-      var paymentNote = !isCash ? '<div class="payment-help receipt-help">' + RTApi.esc(t('interacHelp')) + (cfg.email ? '<br><strong>' + RTApi.esc(cfg.email) + '</strong>' : '') + '</div>' : '';
+      var paymentNote = !isCash ? '<div class="payment-help receipt-help">' + RTApi.esc(payments.redirectMessage || t('interacHelp')) + (cfg.email ? '<br><strong>' + RTApi.esc(cfg.email) + '</strong>' : '') + '</div>' : '';
       $('receipt').innerHTML = '<div><span class="badge green">' + RTApi.esc(appointment.status || '') + '</span><h2>' + t('appointmentReceived') + '</h2><p class="section-sub">' + t('appointmentId') + ': <strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></p><div class="info-list"><div class="info-row"><span>' + t('preferredDate') + '</span><strong>' + RTApi.esc(appointment.preferredDate + ' ' + formatTime12(appointment.preferredTime)) + '</strong></div><div class="info-row"><span>' + t('address') + '</span><strong>' + RTApi.esc(appointment.customerAddress || '') + '</strong></div></div><h3>' + t('servicesTitle') + '</h3>' + rows + receiptTotals + '<p class="section-sub">' + t('paymentStatus') + ': ' + RTApi.esc(appointment.paymentStatus || '') + '</p>' + paymentNote + qr + '</div>';
       $('payBtn').style.display = payments.enabled === 'Yes' && !isCash && (payments.link || isInterac) ? '' : 'none';
       $('payBtn').textContent = payments.buttonLabel || t('securePayment');
       $('receiptModal').classList.add('open');
     }
     function payNow(){
-      if(!payments || !payments.link) return;
+      if(!payments) return;
       $('paymentTitle').textContent = payments.buttonLabel || t('securePayment');
-      $('paymentMessage').textContent = currentLang === 'fr' ? (payments.redirectMessageFr || payments.redirectMessage || '') : (payments.redirectMessageEs || payments.redirectMessage || '');
+      $('paymentMessage').textContent = payments.redirectMessage || (currentLang === 'fr' ? (payments.redirectMessageFr || '') : (payments.redirectMessageEs || ''));
       $('continuePaymentBtn').style.display = payments.link ? '' : 'none';
       $('paymentModal').classList.add('open');
     }
