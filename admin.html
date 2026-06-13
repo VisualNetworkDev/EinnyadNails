@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
   <meta name="theme-color" content="#2d131e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Nails Admin">
-  <link rel="manifest" href="manifest-management.webmanifest?v=einnyadnails-v13">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=einnyadnails-v13">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d131e'/%3E%3Ctext x='32' y='41' font-size='24' text-anchor='middle' fill='%23ffdce8' font-family='Arial'%3EEN%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-v13">
-  <script src="assets/jsQR.js?v=einnyadnails-v13"></script>
-  <script src="assets/config.js?v=einnyadnails-v13"></script>
-  <script src="assets/pwa.js?v=einnyadnails-v13" defer></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v13">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v13">
+  <script src="assets/jsQR.js?v=einnyadnails-web-v13"></script>
+  <script src="assets/config.js?v=einnyadnails-web-v13"></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -35,7 +29,6 @@
       <div class="container nav">
         <a class="brand" href="admin.html"><span class="brand-mark">EN</span><span><strong>EinnyadNails</strong><small id="sessionLabel">Sesión activa</small></span></a>
         <nav class="navlinks">
-          <button type="button" data-install-app onclick="RTPWA.install()" style="display:none;">Instalar</button>
           <button type="button" onclick="refreshAll()">Actualizar</button>
           <button type="button" onclick="logout()">Salir</button>
         </nav>
@@ -770,10 +763,25 @@
     }
     async function saveService(event){
       event.preventDefault();
-      await uploadServicePhotosIfNeeded();
-      var service = { rowNumber:$('serviceRow').value, id:$('serviceId').value, category:$('serviceCategory').value, name:$('serviceName').value, nameFr:$('serviceNameFr').value, description:$('serviceDescription').value, descriptionFr:$('serviceDescriptionFr').value, price:$('servicePrice').value, durationMinutes:$('serviceDuration').value, order:$('serviceOrder').value, image:$('serviceImage').value, beforeImage:$('serviceBeforeImage').value, afterImage:$('serviceAfterImage').value, available:$('serviceAvailable').value, taxable:'No' };
-      try { await adminCall('saveService', { service:service }); resetServiceForm(); await refreshAll(); }
-      catch(error){ toast(error.message || String(error)); }
+      var submitButton = event.target.querySelector('button[type="submit"]');
+      var previousLabel = submitButton ? submitButton.textContent : '';
+      if(submitButton){ submitButton.disabled = true; submitButton.textContent = 'Guardando...'; }
+      try {
+        await uploadServicePhotosIfNeeded();
+        var service = { rowNumber:$('serviceRow').value, id:$('serviceId').value, category:$('serviceCategory').value, name:$('serviceName').value, nameFr:$('serviceNameFr').value, description:$('serviceDescription').value, descriptionFr:$('serviceDescriptionFr').value, price:$('servicePrice').value, durationMinutes:$('serviceDuration').value, order:$('serviceOrder').value, image:$('serviceImage').value, beforeImage:$('serviceBeforeImage').value, afterImage:$('serviceAfterImage').value, available:$('serviceAvailable').value, taxable:'No' };
+        await adminCall('saveService', { service:service });
+        resetServiceForm();
+        await refreshAll();
+        toast('Servicio guardado');
+      }
+      catch(error){
+        var message = error.message || String(error);
+        $('serviceUploadStatus').textContent = message;
+        toast(message);
+      }
+      finally {
+        if(submitButton){ submitButton.disabled = false; submitButton.textContent = previousLabel || 'Guardar servicio'; }
+      }
     }
     async function toggleService(id){ try { await adminCall('toggleService', { id:id }); await refreshAll(); } catch(error){ toast(error.message || String(error)); } }
     async function loadPhotoStorage(){
@@ -850,7 +858,7 @@
           var image = new Image();
           image.onload = function(){
             try {
-              var maxSide = 1800;
+              var maxSide = 1400;
               var width = image.naturalWidth || image.width;
               var height = image.naturalHeight || image.height;
               var scale = Math.min(1, maxSide / Math.max(width, height));
@@ -865,7 +873,7 @@
               ctx.fillStyle = '#fff';
               ctx.fillRect(0, 0, targetWidth, targetHeight);
               ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-              var dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+              var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
               resolve({
                 dataUrl:dataUrl,
                 fileName:makeOptimizedFileName(file.name),
@@ -914,15 +922,16 @@
           input.value = fields[key];
           form.appendChild(input);
         });
-        var timer = setTimeout(cleanupReject, 60000);
+        var timer = setTimeout(cleanupReject, 120000);
         function cleanup(){
           clearTimeout(timer);
           window.removeEventListener('message', onMessage);
           if(form.parentNode) form.parentNode.removeChild(form);
           if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
         }
-        function cleanupReject(){ cleanup(); reject(new Error('La subida tardó demasiado.')); }
+        function cleanupReject(){ cleanup(); reject(new Error('La subida tardo demasiado.')); }
         function onMessage(event){
+          if(event.source !== iframe.contentWindow) return;
           var response = event.data;
           if(!response || typeof response !== 'object' || (!('success' in response))) return;
           cleanup();
