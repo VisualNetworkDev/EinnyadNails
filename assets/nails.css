@@ -503,6 +503,60 @@ th { color:var(--muted); font-size:13px; }
 .hour-row label { display:flex; align-items:center; gap:6px; color:var(--muted); font-weight:900; }
 .hour-row input[type="checkbox"] { width:auto; }
 .photo-upload-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; }
+.image-editor {
+  display:grid;
+  gap:12px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#fff;
+}
+.image-editor-controls {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+.image-editor input[type="range"] { padding:0; accent-color:var(--brand); }
+.before-after-admin-grid { margin-top:18px; }
+.before-after-editor-pair {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+.before-after-admin-item {
+  display:grid;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#fffafc;
+}
+.before-after-admin-preview {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:8px;
+}
+.before-after-admin-preview img {
+  width:100%;
+  aspect-ratio:4 / 5;
+  object-fit:cover;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff4f8;
+}
+.before-after-missing {
+  min-height:150px;
+  display:grid;
+  place-items:center;
+  aspect-ratio:4 / 5;
+  border:1px dashed var(--line);
+  border-radius:14px;
+  background:#fff;
+  color:var(--muted);
+  font-weight:900;
+  text-align:center;
+  padding:10px;
+}
 .photo-storage-card { margin-top:18px; }
 .photo-storage-list { display:grid; gap:10px; margin-top:14px; }
 .photo-storage-line {
@@ -526,6 +580,7 @@ th { color:var(--muted); font-size:13px; }
   border:1px solid var(--line);
   background:#fff4f8;
 }
+.preview-thumb.portrait-preview { aspect-ratio:4 / 5; }
 .before-after-section { margin-top:46px; }
 .before-after-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:18px; }
 .before-after-card {
@@ -1021,8 +1076,17 @@ body {
 
 .admin-shell .btn {
   max-width: 100%;
+  min-width: 0;
   white-space: normal;
   text-align: center;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.admin-shell button,
+.admin-shell .btn {
+  min-height: 44px;
 }
 
 .admin-shell .calendar-week,
@@ -1057,7 +1121,9 @@ body {
   .admin-shell .grid-3,
   .admin-shell .admin-grid,
   .admin-shell .qr-layout,
-  .admin-shell .photo-upload-grid {
+  .admin-shell .photo-upload-grid,
+  .admin-shell .before-after-editor-pair,
+  .admin-shell .before-after-admin-preview {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
@@ -1080,14 +1146,33 @@ body {
   .admin-shell .toolbar {
     width: 100%;
     align-items: stretch;
+    min-width: 0;
   }
 
   .admin-shell .toolbar .btn,
   .admin-shell .toolbar button,
   .admin-shell .section-head.compact > .btn,
   .admin-shell .section-head.compact > button {
-    width: 100%;
+    flex: 1 1 min(180px, 100%);
+    width: auto;
     min-width: 0;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .admin-shell .admin-tabs {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    overflow-x:visible;
+  }
+
+  .admin-shell .admin-tabs button {
+    width:100%;
+    min-width:0;
+    white-space:normal;
+    line-height:1.15;
+    text-align:center;
+    overflow-wrap:anywhere;
   }
 
   .admin-shell .hours-editor {
@@ -1180,6 +1265,10 @@ body {
   .admin-shell .appointments-table td {
     grid-template-columns: minmax(76px, 96px) minmax(0, 1fr);
   }
+
+  .admin-shell .image-editor-controls {
+    grid-template-columns:minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 420px) {
@@ -1209,6 +1298,11 @@ body {
   .admin-shell .btn {
     padding-left: 14px;
     padding-right: 14px;
+    width: 100%;
+  }
+
+  .admin-shell .admin-tabs {
+    grid-template-columns:minmax(0, 1fr);
   }
 
   .admin-shell .appointments-table td {
