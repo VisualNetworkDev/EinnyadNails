@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails</title>
   <meta name="theme-color" content="#2d131e">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v15">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v15">
-  <script src="assets/config.js?v=einnyadnails-web-v15"></script>
-  <script src="assets/app-intro.js?v=einnyadnails-web-v15"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v19">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v19">
+  <script src="assets/config.js?v=einnyadnails-web-v19"></script>
+  <script src="assets/app-intro.js?v=einnyadnails-web-v19"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
@@ -182,7 +182,7 @@
           <label class="field"><span>Email</span><input id="cEmail" type="email" autocomplete="email"></label>
           <div class="split">
             <label class="field"><span data-i18n="coupon">Cupón</span><input id="coupon" oninput="renderCart()"></label>
-            <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option value="Interac e-Transfer">Interac e-Transfer</option><option value="Cash">Cash</option><option value="Payment link">Payment link</option></select></label>
+            <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option value="Interac e-Transfer">Interac e-Transfer</option><option value="Cash">Cash</option></select></label>
           </div>
           <div id="paymentHelp" class="payment-help"></div>
           <label class="field"><span data-i18n="tip">Propina</span><input id="tip" type="number" min="0" step="0.01" value="0" oninput="renderCart()"></label>
@@ -200,7 +200,7 @@
       <div id="receipt"></div>
       <div class="toolbar" style="justify-content:flex-end; margin-top:18px;">
         <button class="btn secondary" type="button" onclick="$('receiptModal').classList.remove('open')" data-i18n="close">Cerrar</button>
-        <button id="payBtn" class="btn dark" style="display:none" type="button" onclick="payNow()">Ver instrucciones de Interac</button>
+        <button id="payBtn" class="btn dark" style="display:none" type="button" onclick="payNow()">Datos de Interac</button>
       </div>
     </div>
   </div>
@@ -272,6 +272,7 @@
         noPromos:'No hay promociones activas ahora.', noReviews:'Todavía no hay reseñas aprobadas.', reviewThanks:'Gracias. Tu reseña fue recibida.', requiredCart:'Selecciona al menos un servicio.', requiredAddress:'La dirección es requerida.', requiredDate:'Selecciona fecha y hora.', requiredAgreement:'Acepta el acuerdo de servicio.',
         appointmentReceived:'Cita recibida', appointmentId:'ID de cita', qrTitle:'QR de cita', qrHelp:'Muestra este QR cuando la técnica llegue para verificar la cita.', paymentStatus:'Estado de pago',
         openDays:'Días abiertos', interacHelp:'Pago por Interac e-Transfer. La cita queda confirmada cuando la dueña verifica el recibo del dinero.', noOpenDays:'No hay horarios públicos configurados.',
+        securePayment:'Datos de Interac', stayHere:'Cerrar', continuePayment:'Abrir enlace', interacHelp:'Pago por Interac e-Transfer. La cita queda pendiente hasta que la duena verifica el recibo del dinero.', interacRecipient:'Contacto Interac', qrLookupTitle:'Informacion de tu cita', qrLookupCompleted:'Esta cita ya fue completada. Puedes reservar una proxima cita cuando quieras.', qrLookupActive:'Esta cita sigue activa. Presenta el QR cuando llegue la tecnica.', invalidQr:'Este QR no esta disponible o la cita no fue encontrada.', nextAppointment:'Reservar otra cita',
         beforeAfterKicker:'Transformaciones reales', beforeAfterTitle:'Antes y despues', beforeAfterText:'Resultados reales organizados por servicio.', beforeAfterResult:'Resultado real de clienta', before:'Antes', after:'Despues', emptyBeforeAfter:'Todavia no hay fotos de antes y despues.'
       },
       fr: {
@@ -289,6 +290,7 @@
         noPromos:'Aucune promotion active.', noReviews:'Aucun avis approuvé pour le moment.', reviewThanks:'Merci. Votre avis a été reçu.', requiredCart:'Sélectionnez au moins un service.', requiredAddress:'L’adresse est requise.', requiredDate:'Sélectionnez date et heure.', requiredAgreement:'Acceptez les conditions.',
         appointmentReceived:'Rendez-vous reçu', appointmentId:'ID rendez-vous', qrTitle:'QR du rendez-vous', qrHelp:'Montrez ce QR lorsque la technicienne arrive.', paymentStatus:'Statut du paiement',
         openDays:'Jours ouverts', interacHelp:'Paiement par Interac e-Transfer. Le rendez-vous est confirmé lorsque la propriétaire vérifie le reçu du paiement.', noOpenDays:'Aucun horaire public configuré.',
+        securePayment:'Details Interac', stayHere:'Fermer', continuePayment:'Ouvrir le lien', interacHelp:'Paiement par Interac e-Transfer. Le rendez-vous reste en attente jusqu a la verification du recu.', interacRecipient:'Contact Interac', qrLookupTitle:'Information du rendez-vous', qrLookupCompleted:'Ce rendez-vous est deja complete. Vous pouvez reserver un prochain rendez-vous quand vous voulez.', qrLookupActive:'Ce rendez-vous est actif. Presentez le QR quand la technicienne arrive.', invalidQr:'Ce QR n est pas disponible ou le rendez-vous est introuvable.', nextAppointment:'Reserver un autre rendez-vous',
         beforeAfterKicker:'Transformations reelles', beforeAfterTitle:'Avant et apres', beforeAfterText:'Resultats reels organises par service.', beforeAfterResult:'Resultat reel cliente', before:'Avant', after:'Apres', emptyBeforeAfter:'Aucune photo avant/apres pour le moment.'
       }
     };
@@ -304,6 +306,7 @@
       $('langLabel').textContent = currentLang === 'es' ? 'FR' : 'ES';
       document.querySelectorAll('[data-i18n]').forEach(function(node){ node.textContent = t(node.getAttribute('data-i18n')); });
       syncPaymentOptions();
+      payments = normalizePaymentConfig(payments);
       $('agreementCopy').textContent = currentLang === 'fr' ? (cfg.agreementTextFr || cfg.agreementText || '') : (cfg.agreementTextEs || cfg.agreementText || '');
       renderPolicyBox();
       renderCats();
@@ -341,6 +344,7 @@
         renderBeforeAfter();
         renderCart();
         loadSecondary();
+        checkPublicQrFromUrl();
       } catch(error) {
         toast(error.message || String(error));
         $('servicesGrid').innerHTML = '<div class="empty">API URL no configurada o no disponible.</div>';
@@ -370,7 +374,7 @@
         services = (result[1] && (result[1].services || result[1].items)) || [];
         cats = ['All'].concat((result[1] && result[1].categories) || []);
         promos = normalizePromos(result[2]);
-        payments = result[3] || payments || { enabled:'No' };
+        payments = normalizePaymentConfig(result[3] || payments || { enabled:'No' });
         loadedLang = targetLang;
         applyConfig();
         renderCats();
@@ -395,7 +399,7 @@
       ]).then(function(result){
         promos = normalizePromos(result[0]);
         reviews = result[1] || [];
-        payments = result[2] || { enabled: 'No' };
+        payments = normalizePaymentConfig(result[2] || { enabled: 'No' });
         availability = result[3] || { hours: [], blocks: [] };
         renderOffers();
         renderReviews();
@@ -503,18 +507,40 @@
       var select = $('payMethod');
       if(!select) return;
       var labels = currentLang === 'fr'
-        ? ['Interac e-Transfer', 'Paiement en personne', 'Lien de paiement']
-        : ['Interac e-Transfer', 'Pago en persona', 'Enlace de pago'];
+        ? ['Interac e-Transfer', 'Paiement en personne']
+        : ['Interac e-Transfer', 'Pago en persona'];
       Array.prototype.forEach.call(select.options, function(option, index){
         if(labels[index]) option.textContent = labels[index];
       });
     }
+    function isLegacyPaymentText(value){
+      var text = String(value || '').toLowerCase();
+      return !text || text.indexOf('pagar seguro') !== -1 || text.indexOf('ver instrucciones') !== -1 || text.indexOf('voir les instructions') !== -1 || text.indexOf('por cuenta bancaria') !== -1 || text.indexOf('par compte bancaire') !== -1 || text.indexOf('correo configurado') !== -1 || text.indexOf('queda confirmada') !== -1 || text.indexOf('payment link') !== -1 || text.indexOf('página segura') !== -1 || text.indexOf('page de paiement') !== -1;
+    }
+    function normalizePaymentConfig(value){
+      var p = Object.assign({}, value || {});
+      var recipient = p.interacRecipient || p.link || (cfg && (cfg.email || cfg.ownerEmail)) || '';
+      var link = String(p.link || '').trim();
+      p.provider = 'Interac e-Transfer';
+      p.interacRecipient = recipient;
+      p.paymentLink = /^https?:\/\//i.test(link) ? link : '';
+      if(isLegacyPaymentText(p.buttonLabel)) p.buttonLabel = t('securePayment');
+      if(isLegacyPaymentText(p.redirectMessage || (currentLang === 'fr' ? p.redirectMessageFr : p.redirectMessageEs))) p.redirectMessage = t('interacHelp');
+      else p.redirectMessage = p.redirectMessage || (currentLang === 'fr' ? p.redirectMessageFr : p.redirectMessageEs) || t('interacHelp');
+      if(isLegacyPaymentText(p.cashInstructions || (currentLang === 'fr' ? p.cashInstructionsFr : p.cashInstructionsEs))) p.cashInstructions = currentLang === 'fr' ? 'Paiement en personne a la fin du service.' : 'Pago en persona al finalizar el servicio.';
+      else p.cashInstructions = p.cashInstructions || (currentLang === 'fr' ? p.cashInstructionsFr : p.cashInstructionsEs) || (currentLang === 'fr' ? 'Paiement en personne a la fin du service.' : 'Pago en persona al finalizar el servicio.');
+      if(!p.enabled && recipient) p.enabled = 'Yes';
+      return p;
+    }
     function renderPaymentHelp(){
       if(!$('paymentHelp')) return;
+      payments = normalizePaymentConfig(payments);
       var method = $('payMethod') ? $('payMethod').value : '';
       var text = payments.redirectMessage || t('interacHelp');
-      if(String(method).toLowerCase().indexOf('cash') !== -1) text = payments.cashInstructions || (currentLang === 'fr' ? 'Paiement en personne a la fin du service.' : 'Pago en persona al finalizar el servicio.');
-      $('paymentHelp').textContent = text;
+      var isCash = String(method).toLowerCase().indexOf('cash') !== -1;
+      if(isCash) text = payments.cashInstructions || (currentLang === 'fr' ? 'Paiement en personne a la fin du service.' : 'Pago en persona al finalizar el servicio.');
+      var recipient = payments.interacRecipient || payments.link || (cfg && cfg.email) || '';
+      $('paymentHelp').innerHTML = '<strong>' + RTApi.esc(isCash ? (currentLang === 'fr' ? 'Paiement en personne' : 'Pago en persona') : 'Interac e-Transfer') + '</strong><p>' + RTApi.esc(text) + '</p>' + (!isCash && recipient ? '<div class="interac-recipient"><span>' + RTApi.esc(t('interacRecipient')) + '</span><strong>' + RTApi.esc(recipient) + '</strong></div>' : '');
     }
     function renderPolicyBox(){
       if(!$('policyBox')) return;
@@ -826,9 +852,9 @@
     }
 
     function renderReceipt(appointment, paymentConfig){
-      payments = paymentConfig || payments || {};
+      payments = normalizePaymentConfig(paymentConfig || payments || {});
       var rows = (appointment.items || []).map(function(item){ return '<div class="cart-line"><span>' + RTApi.esc(item.quantity || 1) + 'x ' + RTApi.esc(currentLang === 'fr' ? (item.nameFr || item.name) : (item.nameEs || item.name)) + '</span><strong>' + RTApi.money(item.lineTotal) + '</strong></div>'; }).join('');
-      var qr = appointment.qrUrl ? '<div class="card" style="margin-top:16px;text-align:center;"><h3>' + t('qrTitle') + '</h3><img src="' + RTApi.esc(appointment.qrUrl) + '" alt="QR" width="190" height="190" style="margin:auto;background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line);"><p class="section-sub">' + t('qrHelp') + '</p><p class="section-sub">Token: ' + RTApi.esc(appointment.qrToken || '') + '</p></div>' : '';
+      var qr = appointment.qrUrl ? '<div class="card" style="margin-top:16px;text-align:center;"><h3>' + t('qrTitle') + '</h3><img src="' + RTApi.esc(appointment.qrUrl) + '" alt="QR" width="190" height="190" style="margin:auto;background:#fff;padding:10px;border-radius:16px;border:1px solid var(--line);"><p class="section-sub">' + t('qrHelp') + '</p></div>' : '';
       var receiptTotals = '<div class="totals"><div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(appointment.subtotal) + '</strong></div><div class="total-line"><span>' + t('discount') + '</span><strong>-' + RTApi.money(appointment.discount) + '</strong></div>';
       if(Number(appointment.travelFee || 0) > 0) receiptTotals += '<div class="total-line fee-line"><span>' + t('travelFee') + '<small>' + t('travelFeeHelp') + '</small></span><strong>' + RTApi.money(appointment.travelFee) + '</strong></div>';
       if(Number(appointment.tip || 0) > 0) receiptTotals += '<div class="total-line"><span>' + t('tip') + '</span><strong>' + RTApi.money(appointment.tip) + '</strong></div>';
@@ -836,22 +862,64 @@
       var methodText = String(appointment.paymentMethod || '');
       var isCash = methodText.toLowerCase().indexOf('cash') !== -1;
       var isInterac = methodText.toLowerCase().indexOf('interac') !== -1 || methodText.toLowerCase().indexOf('transfer') !== -1;
-      var paymentNote = !isCash ? '<div class="payment-help receipt-help">' + RTApi.esc(payments.redirectMessage || t('interacHelp')) + (cfg.email ? '<br><strong>' + RTApi.esc(cfg.email) + '</strong>' : '') + '</div>' : '';
+      var recipient = payments.interacRecipient || payments.link || (cfg && cfg.email) || '';
+      var paymentNote = !isCash ? '<div class="payment-help receipt-help"><strong>Interac e-Transfer</strong><p>' + RTApi.esc(payments.redirectMessage || t('interacHelp')) + '</p>' + (recipient ? '<div class="interac-recipient"><span>' + RTApi.esc(t('interacRecipient')) + '</span><strong>' + RTApi.esc(recipient) + '</strong></div>' : '') + '</div>' : '';
       $('receipt').innerHTML = '<div><span class="badge green">' + RTApi.esc(appointment.status || '') + '</span><h2>' + t('appointmentReceived') + '</h2><p class="section-sub">' + t('appointmentId') + ': <strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></p><div class="info-list"><div class="info-row"><span>' + t('preferredDate') + '</span><strong>' + RTApi.esc(appointment.preferredDate + ' ' + formatTime12(appointment.preferredTime)) + '</strong></div><div class="info-row"><span>' + t('address') + '</span><strong>' + RTApi.esc(appointment.customerAddress || '') + '</strong></div></div><h3>' + t('servicesTitle') + '</h3>' + rows + receiptTotals + '<p class="section-sub">' + t('paymentStatus') + ': ' + RTApi.esc(appointment.paymentStatus || '') + '</p>' + paymentNote + qr + '</div>';
-      $('payBtn').style.display = payments.enabled === 'Yes' && !isCash && (payments.link || isInterac) ? '' : 'none';
+      $('payBtn').style.display = payments.enabled === 'Yes' && !isCash && (payments.paymentLink || recipient || isInterac) ? '' : 'none';
       $('payBtn').textContent = payments.buttonLabel || t('securePayment');
       $('receiptModal').classList.add('open');
     }
     function payNow(){
       if(!payments) return;
+      payments = normalizePaymentConfig(payments);
       $('paymentTitle').textContent = payments.buttonLabel || t('securePayment');
-      $('paymentMessage').textContent = payments.redirectMessage || (currentLang === 'fr' ? (payments.redirectMessageFr || '') : (payments.redirectMessageEs || ''));
-      $('continuePaymentBtn').style.display = payments.link ? '' : 'none';
+      var recipient = payments.interacRecipient || payments.link || (cfg && cfg.email) || '';
+      $('paymentMessage').innerHTML = RTApi.esc(payments.redirectMessage || (currentLang === 'fr' ? (payments.redirectMessageFr || '') : (payments.redirectMessageEs || ''))) + (recipient ? '<br><br><strong>' + RTApi.esc(t('interacRecipient')) + ': ' + RTApi.esc(recipient) + '</strong>' : '');
+      $('continuePaymentBtn').style.display = payments.paymentLink ? '' : 'none';
       $('paymentModal').classList.add('open');
     }
     function continuePayment(){
-      if(payments && payments.link) window.open(payments.link, '_blank');
+      if(payments && payments.paymentLink) window.open(payments.paymentLink, '_blank');
       $('paymentModal').classList.remove('open');
+    }
+
+    async function checkPublicQrFromUrl(){
+      var params = new URLSearchParams(window.location.search || '');
+      var appointmentId = params.get('appointmentId') || params.get('id') || '';
+      var qrToken = params.get('qrToken') || params.get('token') || '';
+      if(!appointmentId || !qrToken) return;
+      try {
+        var result = await RTApi.client('getAppointmentByQr', { appointmentId:appointmentId, qrToken:qrToken, language:currentLang });
+        renderPublicQrAppointment(result);
+      } catch(error) {
+        var message = error.message || String(error);
+        if(/Unknown client action|getAppointmentByQr/i.test(message)) message = t('invalidQr');
+        $('receipt').innerHTML = '<div><span class="badge dark">QR</span><h2>' + RTApi.esc(t('qrLookupTitle')) + '</h2><p class="section-sub">' + RTApi.esc(message) + '</p><button class="btn full" type="button" onclick="closeQrLookupAndBook()">' + RTApi.esc(t('nextAppointment')) + '</button></div>';
+        $('payBtn').style.display = 'none';
+        $('receiptModal').classList.add('open');
+      }
+    }
+    function renderPublicQrAppointment(appointment){
+      var rows = (appointment.items || []).map(function(item){
+        return '<div class="cart-line"><span>' + RTApi.esc(item.quantity || 1) + 'x ' + RTApi.esc(item.name || '') + '</span><strong>' + RTApi.money(item.lineTotal || 0) + '</strong></div>';
+      }).join('');
+      var extras = (appointment.extras || []).map(function(extra){
+        return '<div class="cart-line"><span>' + RTApi.esc(extra.name || '') + '</span><strong>' + RTApi.money(extra.price || 0) + '</strong></div>';
+      }).join('');
+      var summary = appointment.completed ? t('qrLookupCompleted') : t('qrLookupActive');
+      var totals = '<div class="totals"><div class="total-line"><span>' + t('subtotal') + '</span><strong>' + RTApi.money(appointment.subtotal || 0) + '</strong></div>' +
+        (Number(appointment.extraTotal || 0) > 0 ? '<div class="total-line"><span>Extras</span><strong>' + RTApi.money(appointment.extraTotal) + '</strong></div>' : '') +
+        (Number(appointment.travelFee || 0) > 0 ? '<div class="total-line"><span>' + t('travelFee') + '</span><strong>' + RTApi.money(appointment.travelFee) + '</strong></div>' : '') +
+        (Number(appointment.tip || 0) > 0 ? '<div class="total-line"><span>' + t('tip') + '</span><strong>' + RTApi.money(appointment.tip) + '</strong></div>' : '') +
+        '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(appointment.total || 0) + '</strong></div></div>';
+      $('receipt').innerHTML = '<div class="public-qr-summary"><span class="badge ' + (appointment.completed ? 'dark' : 'green') + '">' + RTApi.esc(appointment.completed ? 'Completed' : (appointment.status || 'Active')) + '</span><h2>' + RTApi.esc(t('qrLookupTitle')) + '</h2><p class="section-sub">' + RTApi.esc(summary) + '</p><div class="info-list"><div class="info-row"><span>' + RTApi.esc(t('appointmentId')) + '</span><strong>' + RTApi.esc(appointment.appointmentId || '') + '</strong></div><div class="info-row"><span>' + RTApi.esc(t('preferredDate')) + '</span><strong>' + RTApi.esc((appointment.preferredDate || '') + ' ' + formatTime12(appointment.preferredTime || '')) + '</strong></div><div class="info-row"><span>' + RTApi.esc(t('paymentStatus')) + '</span><strong>' + RTApi.esc(appointment.paymentStatus || '') + '</strong></div></div><h3>' + RTApi.esc(t('servicesTitle')) + '</h3>' + (rows || '<div class="empty">' + RTApi.esc(t('emptyServices')) + '</div>') + (extras ? '<h3>Extras</h3>' + extras : '') + totals + '<button class="btn full" type="button" onclick="closeQrLookupAndBook()">' + RTApi.esc(t('nextAppointment')) + '</button></div>';
+      $('payBtn').style.display = 'none';
+      $('receiptModal').classList.add('open');
+    }
+    function closeQrLookupAndBook(){
+      $('receiptModal').classList.remove('open');
+      if(window.history && window.history.replaceState) window.history.replaceState({}, document.title, window.location.pathname);
+      showSection('services');
     }
 
     init();
