@@ -1092,6 +1092,28 @@ th { color:var(--muted); font-size:13px; }
 }
 .availability-summary strong,
 .payment-help strong { color:var(--brand-3); }
+.payment-help p { margin:8px 0 0; }
+.interac-recipient {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--ink);
+  font-weight:900;
+}
+.interac-recipient span {
+  color:var(--muted);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.interac-recipient strong { overflow-wrap:anywhere; text-align:right; }
+.public-qr-summary .btn { margin-top:16px; }
 .availability-summary p { margin:8px 0 0; }
 .availability-chips {
   display:flex;
@@ -1537,6 +1559,15 @@ body {
 
   .admin-shell .image-editor-controls {
     grid-template-columns:minmax(0, 1fr);
+  }
+
+  .interac-recipient {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .interac-recipient strong {
+    text-align:left;
   }
 }
 
