@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails</title>
   <meta name="theme-color" content="#2d131e">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v13">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v13">
-  <script src="assets/config.js?v=einnyadnails-web-v13"></script>
-  <script src="assets/app-intro.js?v=einnyadnails-web-v13"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v15">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v15">
+  <script src="assets/config.js?v=einnyadnails-web-v15"></script>
+  <script src="assets/app-intro.js?v=einnyadnails-web-v15"></script>
 </head>
 <body>
   <div id="appIntro" class="app-intro" data-auto-hide="false" data-timeout="45000" role="status" aria-live="polite">
@@ -74,6 +74,7 @@
       <div id="beforeAfterSection" class="before-after-section">
         <div class="section-head">
           <div>
+            <span class="pill before-after-kicker" data-i18n="beforeAfterKicker">Transformaciones reales</span>
             <h2 class="section-title" data-i18n="beforeAfterTitle">Antes y despues</h2>
             <p class="section-sub" data-i18n="beforeAfterText">Resultados reales organizados por servicio.</p>
           </div>
@@ -271,7 +272,7 @@
         noPromos:'No hay promociones activas ahora.', noReviews:'Todavía no hay reseñas aprobadas.', reviewThanks:'Gracias. Tu reseña fue recibida.', requiredCart:'Selecciona al menos un servicio.', requiredAddress:'La dirección es requerida.', requiredDate:'Selecciona fecha y hora.', requiredAgreement:'Acepta el acuerdo de servicio.',
         appointmentReceived:'Cita recibida', appointmentId:'ID de cita', qrTitle:'QR de cita', qrHelp:'Muestra este QR cuando la técnica llegue para verificar la cita.', paymentStatus:'Estado de pago',
         openDays:'Días abiertos', interacHelp:'Pago por Interac e-Transfer. La cita queda confirmada cuando la dueña verifica el recibo del dinero.', noOpenDays:'No hay horarios públicos configurados.',
-        beforeAfterTitle:'Antes y despues', beforeAfterText:'Resultados reales organizados por servicio.', before:'Antes', after:'Despues', emptyBeforeAfter:'Todavia no hay fotos de antes y despues.'
+        beforeAfterKicker:'Transformaciones reales', beforeAfterTitle:'Antes y despues', beforeAfterText:'Resultados reales organizados por servicio.', beforeAfterResult:'Resultado real de clienta', before:'Antes', after:'Despues', emptyBeforeAfter:'Todavia no hay fotos de antes y despues.'
       },
       fr: {
         subtitle:'Ongles à domicile', navServices:'Services', navBeforeAfter:'Avant/apres', navOffers:'Promos', navAbout:'À propos', navReviews:'Avis', navContact:'Contact', install:'Installer', cart:'Rendez-vous',
@@ -288,7 +289,7 @@
         noPromos:'Aucune promotion active.', noReviews:'Aucun avis approuvé pour le moment.', reviewThanks:'Merci. Votre avis a été reçu.', requiredCart:'Sélectionnez au moins un service.', requiredAddress:'L’adresse est requise.', requiredDate:'Sélectionnez date et heure.', requiredAgreement:'Acceptez les conditions.',
         appointmentReceived:'Rendez-vous reçu', appointmentId:'ID rendez-vous', qrTitle:'QR du rendez-vous', qrHelp:'Montrez ce QR lorsque la technicienne arrive.', paymentStatus:'Statut du paiement',
         openDays:'Jours ouverts', interacHelp:'Paiement par Interac e-Transfer. Le rendez-vous est confirmé lorsque la propriétaire vérifie le reçu du paiement.', noOpenDays:'Aucun horaire public configuré.',
-        beforeAfterTitle:'Avant et apres', beforeAfterText:'Resultats reels organises par service.', before:'Avant', after:'Apres', emptyBeforeAfter:'Aucune photo avant/apres pour le moment.'
+        beforeAfterKicker:'Transformations reelles', beforeAfterTitle:'Avant et apres', beforeAfterText:'Resultats reels organises par service.', beforeAfterResult:'Resultat reel cliente', before:'Avant', after:'Apres', emptyBeforeAfter:'Aucune photo avant/apres pour le moment.'
       }
     };
 
@@ -533,6 +534,7 @@
       var navButton = button || document.querySelector('.navlinks button[data-section="' + name + '"]');
       if(navButton) navButton.classList.add('active');
       window.scrollTo({ top: document.querySelector('main').offsetTop - 70, behavior: 'smooth' });
+      if(name === 'before-after') setTimeout(activateBeforeAfterAnimations, 80);
     }
 
     function renderCats(){
@@ -555,7 +557,7 @@
         var image = item.image || 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80';
         var selectedQty = cart[item.id] || 0;
         var actionLabel = selectedQty ? (t('add') + ' +' + selectedQty) : t('add');
-        return '<article class="card service-card ' + (selectedQty ? 'selected' : '') + '"><div class="service-img"><img src="' + RTApi.esc(image) + '" alt="' + RTApi.esc(item.name || 'Servicio') + '" loading="lazy" decoding="async"></div>' + (selectedQty ? '<span class="selected-badge">' + RTApi.esc(t('selected')) + '</span>' : '') + '<div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + RTApi.esc(actionLabel) + '</button></div></div></article>';
+        return '<article class="card service-card ' + (selectedQty ? 'selected' : '') + '"><div class="service-img">' + renderPublicImage(image, item.name || 'Servicio') + '</div>' + (selectedQty ? '<span class="selected-badge">' + RTApi.esc(t('selected')) + '</span>' : '') + '<div class="service-body"><span class="badge dark">' + RTApi.esc(item.category || '') + '</span><h3>' + RTApi.esc(item.name || '') + '</h3><p class="section-sub">' + RTApi.esc(item.description || '') + '</p><div class="price-row"><div><div class="price">' + RTApi.money(item.price) + '</div><span class="section-sub">' + RTApi.esc(item.durationMinutes || 60) + ' min</span></div><button class="btn" type="button" onclick="addService(\'' + RTApi.esc(item.id) + '\')">' + RTApi.esc(actionLabel) + '</button></div></div></article>';
       }).join('') || '<div class="empty">' + t('emptyServices') + '</div>';
     }
     function renderBeforeAfter(){
@@ -565,10 +567,75 @@
         $('beforeAfterGrid').innerHTML = '<div class="empty">' + RTApi.esc(t('emptyBeforeAfter')) + '</div>';
         return;
       }
-      $('beforeAfterGrid').innerHTML = pairs.map(function(item){
-        return '<article class="before-after-card"><h3>' + RTApi.esc(item.name || '') + '</h3><div class="before-after-pair"><figure><img src="' + RTApi.esc(item.beforeImage) + '" alt="' + RTApi.esc(t('before') + ' - ' + (item.name || '')) + '" loading="lazy" decoding="async"><figcaption>' + RTApi.esc(t('before')) + '</figcaption></figure><figure><img src="' + RTApi.esc(item.afterImage) + '" alt="' + RTApi.esc(t('after') + ' - ' + (item.name || '')) + '" loading="lazy" decoding="async"><figcaption>' + RTApi.esc(t('after')) + '</figcaption></figure></div></article>';
+      $('beforeAfterGrid').innerHTML = pairs.map(function(item, index){
+        var delay = Math.min(index * 90, 420);
+        var category = item.category ? '<span class="badge dark">' + RTApi.esc(item.category) + '</span>' : '';
+        return '<article class="before-after-card before-after-reveal" style="--reveal-delay:' + delay + 'ms">' +
+          '<div class="before-after-card-head">' + category + '<h3>' + RTApi.esc(item.name || '') + '</h3></div>' +
+          '<div class="before-after-pair" aria-label="' + RTApi.esc(t('beforeAfterTitle') + ' - ' + (item.name || '')) + '">' +
+          '<span class="before-after-divider" aria-hidden="true"><i></i></span>' +
+          '<span class="before-after-spark spark-one" aria-hidden="true"></span><span class="before-after-spark spark-two" aria-hidden="true"></span>' +
+          '<figure class="before-photo">' + renderPublicImage(item.beforeImage, t('before') + ' - ' + (item.name || '')) + '<figcaption>' + RTApi.esc(t('before')) + '</figcaption></figure>' +
+          '<figure class="after-photo">' + renderPublicImage(item.afterImage, t('after') + ' - ' + (item.name || '')) + '<figcaption>' + RTApi.esc(t('after')) + '</figcaption></figure>' +
+          '</div><div class="before-after-note"><span>' + RTApi.esc(t('beforeAfterResult')) + '</span></div></article>';
       }).join('');
+      activateBeforeAfterAnimations();
     }
+    function activateBeforeAfterAnimations(){
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.before-after-reveal'));
+      if(!cards.length) return;
+      if(!('IntersectionObserver' in window)){
+        cards.forEach(function(card){ card.classList.add('is-visible'); });
+        return;
+      }
+      if(window.beforeAfterObserver && window.beforeAfterObserver.disconnect) window.beforeAfterObserver.disconnect();
+      window.beforeAfterObserver = new IntersectionObserver(function(entries, observer){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+      cards.forEach(function(card){ window.beforeAfterObserver.observe(card); });
+    }
+    function renderPublicImage(url, alt){
+      var src = publicImageUrl(url);
+      if(!src) return '';
+      var driveId = extractDriveImageId(url);
+      var attrs = driveId ? ' data-drive-id="' + RTApi.esc(driveId) + '" data-fallback-step="0" onerror="handlePublicImageError(this)"' : ' onerror="this.remove()"';
+      return '<img src="' + RTApi.esc(src) + '" alt="' + RTApi.esc(alt || '') + '" loading="lazy" decoding="async"' + attrs + '>';
+    }
+    function publicImageUrl(url){
+      var value = String(url || '').trim();
+      var driveId = extractDriveImageId(value);
+      return driveId ? 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(driveId) + '=w1600' : value;
+    }
+    function extractDriveImageId(value){
+      var text = String(value || '').trim();
+      if(!text) return '';
+      var match = text.match(/[?&]id=([^&]+)/);
+      if(match) return decodeURIComponent(match[1]);
+      match = text.match(/\/d\/([^/?#=]+)/);
+      if(match) return decodeURIComponent(match[1]);
+      if(/^[a-zA-Z0-9_-]{20,}$/.test(text)) return text;
+      return '';
+    }
+    window.handlePublicImageError = function(image){
+      var driveId = image && image.dataset ? image.dataset.driveId : '';
+      if(!driveId){ if(image) image.style.display = 'none'; return; }
+      var step = Number(image.dataset.fallbackStep || 0);
+      var fallbacks = [
+        'https://drive.google.com/thumbnail?id=' + encodeURIComponent(driveId) + '&sz=w1600',
+        'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(driveId)
+      ];
+      if(step < fallbacks.length){
+        image.dataset.fallbackStep = String(step + 1);
+        image.src = fallbacks[step];
+      } else {
+        image.style.display = 'none';
+      }
+    };
     function renderOffers(){
       $('offers').innerHTML = promos.map(function(promo){
         return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code || '') + '</span><h3>' + RTApi.esc(promo.title || '') + '</h3><p class="section-sub">' + RTApi.esc(promo.description || '') + '</p></div>';
