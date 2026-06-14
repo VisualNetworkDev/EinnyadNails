@@ -1,4 +1,4 @@
-const CLEANUP_VERSION = 'einnyadnails-web-cleanup-v14';
+const CLEANUP_VERSION = 'einnyadnails-web-cleanup-v15';
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
