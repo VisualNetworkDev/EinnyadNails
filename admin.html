@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
   <meta name="theme-color" content="#2d131e">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v13">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v13">
-  <script src="assets/jsQR.js?v=einnyadnails-web-v13"></script>
-  <script src="assets/config.js?v=einnyadnails-web-v13"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v15">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v15">
+  <script src="assets/jsQR.js?v=einnyadnails-web-v15"></script>
+  <script src="assets/config.js?v=einnyadnails-web-v15"></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -132,8 +132,10 @@
               <div class="image-editor">
                 <label class="field full"><span>Subir foto del servicio</span><input id="serviceImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('serviceImageFile')"></label>
                 <div class="image-editor-controls">
+                  <label class="field"><span>Modo</span><select id="serviceImageFit" onchange="updateImageEditorPreview('serviceImageFile')"><option value="contain">Completa sin cortar</option><option value="cover">Recortar para llenar</option></select></label>
                   <label class="field"><span>Recorte</span><select id="serviceImageAspect" onchange="updateImageEditorPreview('serviceImageFile')"><option value="4:3">Servicio 4:3</option><option value="1:1">Cuadrada 1:1</option><option value="4:5">Retrato 4:5</option><option value="3:2">Galeria 3:2</option></select></label>
                   <label class="field"><span>Enfoque</span><select id="serviceImageFocus" onchange="syncImageFocus('serviceImageFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Zoom</span><input id="serviceImageZoom" type="range" min="80" max="180" value="100" oninput="updateImageEditorPreview('serviceImageFile')"></label>
                   <label class="field"><span>Horizontal</span><input id="serviceImageOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('serviceImageFile')"></label>
                   <label class="field"><span>Vertical</span><input id="serviceImageOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('serviceImageFile')"></label>
                 </div>
@@ -165,7 +167,9 @@
               <div class="image-editor">
                 <label class="field full"><span>Foto antes</span><input id="beforeAfterBeforeFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('beforeAfterBeforeFile')"></label>
                 <div class="image-editor-controls">
+                  <label class="field"><span>Modo</span><select id="beforeAfterBeforeFit" onchange="updateImageEditorPreview('beforeAfterBeforeFile')"><option value="contain">Completa sin cortar</option><option value="cover">Recortar para llenar</option></select></label>
                   <label class="field"><span>Enfoque</span><select id="beforeAfterBeforeFocus" onchange="syncImageFocus('beforeAfterBeforeFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Zoom</span><input id="beforeAfterBeforeZoom" type="range" min="80" max="180" value="100" oninput="updateImageEditorPreview('beforeAfterBeforeFile')"></label>
                   <label class="field"><span>Horizontal</span><input id="beforeAfterBeforeOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterBeforeFile')"></label>
                   <label class="field"><span>Vertical</span><input id="beforeAfterBeforeOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterBeforeFile')"></label>
                 </div>
@@ -174,7 +178,9 @@
               <div class="image-editor">
                 <label class="field full"><span>Foto despues</span><input id="beforeAfterAfterFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePhotoEditorFile('beforeAfterAfterFile')"></label>
                 <div class="image-editor-controls">
+                  <label class="field"><span>Modo</span><select id="beforeAfterAfterFit" onchange="updateImageEditorPreview('beforeAfterAfterFile')"><option value="contain">Completa sin cortar</option><option value="cover">Recortar para llenar</option></select></label>
                   <label class="field"><span>Enfoque</span><select id="beforeAfterAfterFocus" onchange="syncImageFocus('beforeAfterAfterFile')"><option value="center">Centro</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+                  <label class="field"><span>Zoom</span><input id="beforeAfterAfterZoom" type="range" min="80" max="180" value="100" oninput="updateImageEditorPreview('beforeAfterAfterFile')"></label>
                   <label class="field"><span>Horizontal</span><input id="beforeAfterAfterOffsetX" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterAfterFile')"></label>
                   <label class="field"><span>Vertical</span><input id="beforeAfterAfterOffsetY" type="range" min="0" max="100" value="50" oninput="updateImageEditorPreview('beforeAfterAfterFile')"></label>
                 </div>
@@ -785,10 +791,15 @@
       }
       var pairs = list.filter(function(item){ return item.beforeImage || item.afterImage; });
       $('beforeAfterAdminList').innerHTML = pairs.map(function(item){
-        var before = item.beforeImage ? '<img src="' + RTApi.esc(item.beforeImage) + '" alt="Antes" onerror="this.remove()">' : '<div class="before-after-missing">Sin antes</div>';
-        var after = item.afterImage ? '<img src="' + RTApi.esc(item.afterImage) + '" alt="Despues" onerror="this.remove()">' : '<div class="before-after-missing">Sin despues</div>';
+        var before = item.beforeImage ? renderAdminImage(item.beforeImage, 'Antes') : '<div class="before-after-missing">Sin antes</div>';
+        var after = item.afterImage ? renderAdminImage(item.afterImage, 'Despues') : '<div class="before-after-missing">Sin despues</div>';
         return '<div class="before-after-admin-item"><div><strong>' + RTApi.esc(item.category + ' - ' + item.name) + '</strong><br><span class="section-sub">' + RTApi.esc(item.beforeImage && item.afterImage ? 'Par completo' : 'Falta una foto') + '</span></div><div class="before-after-admin-preview">' + before + after + '</div><div class="toolbar"><button class="btn secondary" type="button" onclick="editBeforeAfter(\'' + item.rowNumber + '\')">Editar</button><button class="btn danger" type="button" onclick="clearBeforeAfter(\'' + item.rowNumber + '\')">Borrar</button></div></div>';
       }).join('') || '<div class="empty">No hay resultados antes/despues todavia. Selecciona un servicio y sube las dos fotos.</div>';
+    }
+    function renderAdminImage(url, alt){
+      var driveId = extractDriveImageId(url);
+      var attrs = driveId ? ' data-drive-id="' + RTApi.esc(driveId) + '" data-fallback-step="0" onerror="handleAdminImageError(this)"' : ' onerror="this.remove()"';
+      return '<img src="' + RTApi.esc(publicImageUrl(url)) + '" alt="' + RTApi.esc(alt || '') + '"' + attrs + '>';
     }
     function editService(rowNumber){
       var item = (adminData.services || []).find(function(service){ return String(service.rowNumber) === String(rowNumber); });
@@ -975,13 +986,24 @@
     function setPreview(id, url){
       var image = $(id);
       if(!image) return;
-      image.src = url || '';
+      var src = publicImageUrl(url);
+      image.src = src || '';
+      var driveId = extractDriveImageId(url);
+      if(driveId){
+        image.dataset.driveId = driveId;
+        image.dataset.fallbackStep = '0';
+        image.onerror = function(){ handleAdminImageError(image); };
+      } else {
+        delete image.dataset.driveId;
+        delete image.dataset.fallbackStep;
+        image.onerror = null;
+      }
       image.style.display = url ? 'block' : 'none';
     }
     var photoEditors = {
-      serviceImageFile:{ file:null, preview:'serviceImagePreview', aspect:'serviceImageAspect', focus:'serviceImageFocus', x:'serviceImageOffsetX', y:'serviceImageOffsetY', defaultAspect:'4:3' },
-      beforeAfterBeforeFile:{ file:null, preview:'beforeAfterBeforePreview', focus:'beforeAfterBeforeFocus', x:'beforeAfterBeforeOffsetX', y:'beforeAfterBeforeOffsetY', defaultAspect:'4:5' },
-      beforeAfterAfterFile:{ file:null, preview:'beforeAfterAfterPreview', focus:'beforeAfterAfterFocus', x:'beforeAfterAfterOffsetX', y:'beforeAfterAfterOffsetY', defaultAspect:'4:5' }
+      serviceImageFile:{ file:null, preview:'serviceImagePreview', aspect:'serviceImageAspect', fit:'serviceImageFit', zoom:'serviceImageZoom', focus:'serviceImageFocus', x:'serviceImageOffsetX', y:'serviceImageOffsetY', defaultAspect:'4:3' },
+      beforeAfterBeforeFile:{ file:null, preview:'beforeAfterBeforePreview', fit:'beforeAfterBeforeFit', zoom:'beforeAfterBeforeZoom', focus:'beforeAfterBeforeFocus', x:'beforeAfterBeforeOffsetX', y:'beforeAfterBeforeOffsetY', defaultAspect:'4:5' },
+      beforeAfterAfterFile:{ file:null, preview:'beforeAfterAfterPreview', fit:'beforeAfterAfterFit', zoom:'beforeAfterAfterZoom', focus:'beforeAfterAfterFocus', x:'beforeAfterAfterOffsetX', y:'beforeAfterAfterOffsetY', defaultAspect:'4:5' }
     };
     function handlePhotoEditorFile(inputId){
       var config = photoEditors[inputId];
@@ -1012,6 +1034,8 @@
       if(clearInput && $(inputId)) $(inputId).value = '';
       if($(config.x)) $(config.x).value = 50;
       if($(config.y)) $(config.y).value = 50;
+      if($(config.zoom)) $(config.zoom).value = 100;
+      if($(config.fit)) $(config.fit).value = 'contain';
       if($(config.focus)) $(config.focus).value = 'center';
       setPreview(config.preview, imageUrl || '');
       updateImageEditorPreview(inputId);
@@ -1030,11 +1054,20 @@
       var preview = $(config.preview);
       if(!preview) return;
       preview.style.aspectRatio = aspectToCss(getEditorAspect(inputId));
+      preview.style.objectFit = getEditorFit(inputId) === 'contain' ? 'contain' : 'cover';
       preview.style.objectPosition = (($(config.x) && $(config.x).value) || 50) + '% ' + (($(config.y) && $(config.y).value) || 50) + '%';
     }
     function getEditorAspect(inputId){
       var config = photoEditors[inputId] || {};
       return (config.aspect && $(config.aspect) && $(config.aspect).value) || config.defaultAspect || '4:5';
+    }
+    function getEditorFit(inputId){
+      var config = photoEditors[inputId] || {};
+      return (config.fit && $(config.fit) && $(config.fit).value) || 'contain';
+    }
+    function getEditorZoom(inputId){
+      var config = photoEditors[inputId] || {};
+      return Number((config.zoom && $(config.zoom) && $(config.zoom).value) || 100);
     }
     function aspectToCss(value){
       var parts = String(value || '4:5').split(':');
@@ -1048,7 +1081,9 @@
         config.file,
         getEditorAspect(inputId),
         Number(($(config.x) && $(config.x).value) || 50),
-        Number(($(config.y) && $(config.y).value) || 50)
+        Number(($(config.y) && $(config.y).value) || 50),
+        getEditorFit(inputId),
+        getEditorZoom(inputId)
       );
       $(statusId).innerHTML = '<span class="loading-inline"></span>Subiendo foto ' + label + ' (' + edited.sizeLabel + ')...';
       var result = await adminBridgeCall('uploadImage', { dataUrl:edited.dataUrl, fileName:edited.fileName, context:context || ('service-' + label) });
@@ -1056,7 +1091,7 @@
       resetPhotoEditor(inputId, result.url, true);
       $(statusId).textContent = '';
     }
-    function cropEditedImage(file, aspectValue, offsetXPercent, offsetYPercent){
+    function cropEditedImage(file, aspectValue, offsetXPercent, offsetYPercent, fitMode, zoomPercent){
       return new Promise(function(resolve, reject){
         var reader = new FileReader();
         reader.onload = function(){
@@ -1065,33 +1100,28 @@
             try {
               var aspect = String(aspectValue || '4:5').split(':').map(Number);
               var targetRatio = (aspect[0] || 4) / (aspect[1] || 5);
-              var imageRatio = image.naturalWidth / image.naturalHeight;
-              var cropWidth = image.naturalWidth;
-              var cropHeight = image.naturalHeight;
-              var cropX = 0;
-              var cropY = 0;
               var offsetX = Math.max(0, Math.min(1, Number(offsetXPercent || 50) / 100));
               var offsetY = Math.max(0, Math.min(1, Number(offsetYPercent || 50) / 100));
-              if(imageRatio > targetRatio){
-                cropWidth = cropHeight * targetRatio;
-                cropX = (image.naturalWidth - cropWidth) * offsetX;
-              } else {
-                cropHeight = cropWidth / targetRatio;
-                cropY = (image.naturalHeight - cropHeight) * offsetY;
-              }
+              var zoom = Math.max(0.8, Math.min(1.8, Number(zoomPercent || 100) / 100));
               var maxSide = 1400;
-              var scale = Math.min(1, maxSide / Math.max(cropWidth, cropHeight));
-              var targetWidth = Math.max(1, Math.round(cropWidth * scale));
-              var targetHeight = Math.max(1, Math.round(cropHeight * scale));
+              var targetWidth = targetRatio >= 1 ? maxSide : Math.round(maxSide * targetRatio);
+              var targetHeight = targetRatio >= 1 ? Math.round(maxSide / targetRatio) : maxSide;
               var canvas = document.createElement('canvas');
               canvas.width = targetWidth;
               canvas.height = targetHeight;
               var ctx = canvas.getContext('2d');
               ctx.imageSmoothingEnabled = true;
               ctx.imageSmoothingQuality = 'high';
-              ctx.fillStyle = '#fff';
+              ctx.fillStyle = '#fff4f8';
               ctx.fillRect(0, 0, targetWidth, targetHeight);
-              ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, targetWidth, targetHeight);
+              if(String(fitMode || 'contain') === 'contain'){
+                drawBlurredCover(ctx, image, targetWidth, targetHeight, targetRatio);
+                var containScale = Math.min(targetWidth / image.naturalWidth, targetHeight / image.naturalHeight) * zoom;
+                drawImageWithOffsets(ctx, image, targetWidth, targetHeight, image.naturalWidth * containScale, image.naturalHeight * containScale, offsetX, offsetY);
+              } else {
+                var coverScale = Math.max(targetWidth / image.naturalWidth, targetHeight / image.naturalHeight) * zoom;
+                drawImageWithOffsets(ctx, image, targetWidth, targetHeight, image.naturalWidth * coverScale, image.naturalHeight * coverScale, offsetX, offsetY);
+              }
               var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
               resolve({
                 dataUrl:dataUrl,
@@ -1108,6 +1138,55 @@
         reader.onerror = function(){ reject(new Error('No se pudo leer la imagen.')); };
         reader.readAsDataURL(file);
       });
+    }
+    function drawImageWithOffsets(ctx, image, targetWidth, targetHeight, drawWidth, drawHeight, offsetX, offsetY){
+      var x = drawWidth <= targetWidth ? (targetWidth - drawWidth) / 2 : (targetWidth - drawWidth) * offsetX;
+      var y = drawHeight <= targetHeight ? (targetHeight - drawHeight) / 2 : (targetHeight - drawHeight) * offsetY;
+      ctx.drawImage(image, x, y, drawWidth, drawHeight);
+    }
+    function drawBlurredCover(ctx, image, targetWidth, targetHeight){
+      var coverScale = Math.max(targetWidth / image.naturalWidth, targetHeight / image.naturalHeight);
+      var drawWidth = image.naturalWidth * coverScale;
+      var drawHeight = image.naturalHeight * coverScale;
+      var x = (targetWidth - drawWidth) / 2;
+      var y = (targetHeight - drawHeight) / 2;
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      if('filter' in ctx) ctx.filter = 'blur(18px)';
+      ctx.drawImage(image, x, y, drawWidth, drawHeight);
+      ctx.restore();
+      ctx.fillStyle = 'rgba(255,244,248,.58)';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+    }
+    function publicImageUrl(url){
+      var value = String(url || '').trim();
+      var driveId = extractDriveImageId(value);
+      return driveId ? 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(driveId) + '=w1600' : value;
+    }
+    function extractDriveImageId(value){
+      var text = String(value || '').trim();
+      if(!text) return '';
+      var match = text.match(/[?&]id=([^&]+)/);
+      if(match) return decodeURIComponent(match[1]);
+      match = text.match(/\/d\/([^/?#=]+)/);
+      if(match) return decodeURIComponent(match[1]);
+      if(/^[a-zA-Z0-9_-]{20,}$/.test(text)) return text;
+      return '';
+    }
+    function handleAdminImageError(image){
+      var driveId = image && image.dataset ? image.dataset.driveId : '';
+      if(!driveId){ if(image) image.remove(); return; }
+      var step = Number(image.dataset.fallbackStep || 0);
+      var fallbacks = [
+        'https://drive.google.com/thumbnail?id=' + encodeURIComponent(driveId) + '&sz=w1600',
+        'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(driveId)
+      ];
+      if(step < fallbacks.length){
+        image.dataset.fallbackStep = String(step + 1);
+        image.src = fallbacks[step];
+      } else {
+        image.remove();
+      }
     }
     function makeOptimizedFileName(name){
       var base = String(name || 'einnyadnails-photo').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '') || 'einnyadnails-photo';
