@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
   <meta name="theme-color" content="#2d131e">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v19">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v19">
-  <script src="assets/jsQR.js?v=einnyadnails-web-v19"></script>
-  <script src="assets/config.js?v=einnyadnails-web-v19"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v21">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v21">
+  <script src="assets/jsQR.js?v=einnyadnails-web-v21"></script>
+  <script src="assets/config.js?v=einnyadnails-web-v21"></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -768,10 +768,13 @@
       var id = $('editAppointmentId').value;
       if(id) await resendReceipt(id);
     }
-    function openQrFromAppointment(id, token){
-      $('qrText').value = 'ENAIL|' + id + '|' + token;
+    async function openQrFromAppointment(id, token){
       showPanel('qr');
-      verifyQr();
+      var raw = 'ENAIL|' + String(id || '').trim() + '|' + String(token || '').trim();
+      $('qrText').value = raw;
+      currentQrAppointment = null;
+      $('qrResult').innerHTML = '<div class="empty"><span class="loading-inline"></span>Verificando cita ' + RTApi.esc(id) + '...</div>';
+      await verifyQr();
     }
     function renderServices(){
       var list = adminData.services || [];
