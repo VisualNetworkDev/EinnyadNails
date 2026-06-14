@@ -1124,7 +1124,8 @@
       payload.sessionToken = sessionToken;
       payload.userAgent = navigator.userAgent;
       return new Promise(function(resolve, reject){
-        var iframeName = 'bridge_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        var requestId = 'enail_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        var iframeName = 'bridge_' + requestId;
         var iframe = document.createElement('iframe');
         iframe.name = iframeName;
         iframe.style.display = 'none';
@@ -1133,7 +1134,7 @@
         form.action = window.EINNYAD_SYSTEM.adminApiUrl;
         form.target = iframeName;
         form.style.display = 'none';
-        var fields = { bridge:'1', action:action, payload:JSON.stringify(payload) };
+        var fields = { bridge:'1', requestId:requestId, action:action, payload:JSON.stringify(payload) };
         Object.keys(fields).forEach(function(key){
           var input = document.createElement('input');
           input.type = 'hidden';
@@ -1150,9 +1151,12 @@
         }
         function cleanupReject(){ cleanup(); reject(new Error('La subida tardo demasiado.')); }
         function onMessage(event){
-          if(event.source !== iframe.contentWindow) return;
           var response = event.data;
+          if(typeof response === 'string'){
+            try { response = JSON.parse(response); } catch(error) {}
+          }
           if(!response || typeof response !== 'object' || (!('success' in response))) return;
+          if(response.requestId && response.requestId !== requestId) return;
           cleanup();
           if(response.success) resolve(response.data || response);
           else reject(new Error(response.message || 'Error subiendo imagen'));
