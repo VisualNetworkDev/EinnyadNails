@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EinnyadNails Admin</title>
   <meta name="theme-color" content="#2d131e">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v21">
-  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v21">
-  <script src="assets/jsQR.js?v=einnyadnails-web-v21"></script>
-  <script src="assets/config.js?v=einnyadnails-web-v21"></script>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=einnyadnails-web-v22">
+  <link rel="stylesheet" href="assets/nails.css?v=einnyadnails-web-v22">
+  <script src="assets/jsQR.js?v=einnyadnails-web-v22"></script>
+  <script src="assets/config.js?v=einnyadnails-web-v22"></script>
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -576,7 +576,7 @@
       $('appointmentsTable').innerHTML = '<table class="appointments-table"><thead><tr><th>Cita</th><th>Clienta</th><th>Servicios</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' + list.map(function(item){
         var services = (item.items || []).map(function(row){ return RTApi.esc((row.quantity || 1) + 'x ' + (row.nameEs || row.name)); }).join('<br>');
         var travelFeeLine = Number(item.travelFee || 0) > 0 ? '<br><span class="section-sub">Cargo domicilio ' + RTApi.money(item.travelFee || 0) + '</span>' : '';
-        return '<tr><td data-label="Cita"><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td data-label="Clienta">' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td data-label="Servicios">' + services + '</td><td data-label="Fecha">' + RTApi.esc(item.preferredDate + ' ' + formatTime12(item.preferredTime)) + '</td><td data-label="Total">' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span>' + travelFeeLine + '</td><td data-label="Estado"><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td data-label="Acciones"><div class="table-actions"><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Editar</button><button class="btn secondary" type="button" onclick="resendReceipt(\'' + RTApi.esc(item.appointmentId) + '\')">Recibo</button><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">QR</button><button class="btn danger" type="button" onclick="cancelAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Cancelar</button></div></td></tr>';
+        return '<tr><td data-label="Cita"><strong>' + RTApi.esc(item.appointmentId) + '</strong><br><span class="section-sub">' + RTApi.esc(item.paymentStatus || '') + '</span></td><td data-label="Clienta">' + RTApi.esc(item.customerName) + '<br><a href="tel:' + RTApi.esc(item.customerPhone) + '">' + RTApi.esc(item.customerPhone) + '</a><br><span class="section-sub">' + RTApi.esc(item.customerAddress) + '</span></td><td data-label="Servicios">' + services + '</td><td data-label="Fecha">' + RTApi.esc(item.preferredDate + ' ' + formatTime12(item.preferredTime)) + '</td><td data-label="Total">' + RTApi.money(item.totalUpdated || item.total) + '<br><span class="section-sub">Extras ' + RTApi.money(item.extraTotal || 0) + '</span>' + travelFeeLine + '</td><td data-label="Estado"><span class="status ' + (item.status === 'Completed' ? 'completed' : '') + '">' + RTApi.esc(item.status) + '</span></td><td data-label="Acciones"><div class="table-actions"><select onchange="updateStatus(\'' + RTApi.esc(item.appointmentId) + '\', this.value)"><option value="">Cambiar</option><option>Pending</option><option>Confirmed</option><option>Client arrived</option><option>In service</option><option>Completed</option><option>Cancelled</option></select><button class="btn secondary" type="button" onclick="editAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Editar</button><button class="btn secondary" type="button" onclick="resendReceipt(\'' + RTApi.esc(item.appointmentId) + '\')">Recibo</button><button class="btn secondary" type="button" onclick="openQrFromAppointment(\'' + RTApi.esc(item.appointmentId) + '\', \'' + RTApi.esc(item.qrToken || '') + '\')">QR</button><button class="btn danger-soft" type="button" onclick="cancelAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Cancelar</button><button class="btn danger" type="button" onclick="deleteAppointment(\'' + RTApi.esc(item.appointmentId) + '\')">Borrar</button></div></td></tr>';
       }).join('') + '</tbody></table>';
     }
     async function updateStatus(id, status){
@@ -1393,6 +1393,21 @@
         toast('Hojas limpias');
       } catch(error) {
         $('cleanProductionStatus').textContent = error.message || String(error);
+      }
+    }
+
+    async function deleteAppointment(id){
+      var item = (adminData.appointments || []).find(function(row){ return row.appointmentId === id; }) || {};
+      var label = (item.customerName ? item.customerName + ' - ' : '') + (item.preferredDate || '') + ' ' + formatTime12(item.preferredTime || '');
+      var ok = await confirmAction('Borrar cita', 'Seguro que quieres borrar esta cita por completo? ' + label + ' Se eliminaran la cita, extras y registros relacionados. No toca servicios, fotos, pagos, configuracion ni usuario.');
+      if(!ok) return;
+      try {
+        var result = await adminCall('deleteAppointment', { appointmentId:id, confirm:'DELETE' });
+        var removed = result.removed || {};
+        await refreshAll();
+        toast('Cita borrada: ' + (removed.appointments || 0));
+      } catch(error) {
+        toast(error.message || String(error));
       }
     }
 
