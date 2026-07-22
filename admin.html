@@ -464,7 +464,7 @@
       setLoginBusy(true, 'Verificando acceso...');
       try {
         var email = $('loginEmail').value.trim();
-        var result = await RTApi.admin('login', { email:email, password:$('loginPassword').value, userAgent:navigator.userAgent });
+        var result = await adminBridgeCall('login', { email:email, password:$('loginPassword').value });
         sessionToken = result.sessionToken;
         if(!sessionToken) throw new Error('No se recibio una sesion valida.');
         localStorage.setItem('en_admin_email', email);
@@ -1238,7 +1238,12 @@
           if(typeof response === 'string'){
             try { response = JSON.parse(response); } catch(error) {}
           }
-          if(!response || typeof response !== 'object' || (!('success' in response))) return;
+          var allowedOrigin = false;
+          try {
+            var originHost = new URL(event.origin).hostname;
+            allowedOrigin = event.origin === 'https://script.google.com' || originHost === 'script.googleusercontent.com' || originHost.endsWith('.googleusercontent.com');
+          } catch(error) {}
+          if(!allowedOrigin || !response || typeof response !== 'object' || response.einnyadAdminApi !== true || (!('success' in response))) return;
           if(response.requestId && response.requestId !== requestId) return;
           cleanup();
           if(response.success) resolve(response.data || response);
