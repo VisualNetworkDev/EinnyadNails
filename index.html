@@ -176,10 +176,10 @@
           </div>
           <label class="field"><span data-i18n="address">Dirección del servicio</span><input id="cAddress" autocomplete="street-address"></label>
           <div class="split">
-            <label class="field"><span data-i18n="name">Nombre</span><input id="cName" autocomplete="name"></label>
-            <label class="field"><span data-i18n="phone">Teléfono</span><input id="cPhone" autocomplete="tel"></label>
+            <label class="field"><span data-i18n="name">Nombre</span><input id="cName" autocomplete="name" maxlength="150"></label>
+            <label class="field"><span data-i18n="phone">Teléfono</span><input id="cPhone" type="tel" autocomplete="tel" maxlength="40"></label>
           </div>
-          <label class="field"><span>Email</span><input id="cEmail" type="email" autocomplete="email"></label>
+          <label class="field"><span>Email</span><input id="cEmail" type="email" autocomplete="email" maxlength="254"></label>
           <div class="split">
             <label class="field"><span data-i18n="coupon">Cupón</span><input id="coupon" oninput="renderCart()"></label>
             <label class="field"><span data-i18n="payment">Pago</span><select id="payMethod"><option value="Interac e-Transfer">Interac e-Transfer</option><option value="Cash">Cash</option></select></label>
@@ -250,6 +250,11 @@
     var cart = {};
     var cat = 'All';
     var timeSlotsLoading = false;
+    var slotsRequestSequence = 0;
+    var slotsRequestKey = '';
+    var slotsTimer = null;
+    var supportsClientPost = false;
+    var pendingBooking = null;
     var spotlightIndex = 0;
     var spotlightTimer = null;
     var currentLang = localStorage.getItem('en_lang') || (navigator.language && navigator.language.toLowerCase().indexOf('fr') === 0 ? 'fr' : 'es');
@@ -323,34 +328,62 @@
 
     async function init(){
       if(window.RTIntro) RTIntro.setStep('Cargando servicios...');
-      var today = new Date().toISOString().slice(0, 10);
+      var today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
       if($('preferredDate')) $('preferredDate').min = today;
       if($('preferredDate')) $('preferredDate').addEventListener('change', loadAvailableTimes);
       if($('payMethod')) $('payMethod').addEventListener('change', renderPaymentHelp);
       setLanguage(currentLang);
       try {
         var initLang = currentLang;
-        var result = await Promise.all([
-          RTApi.client('getSalonConfig', { language: initLang }),
-          RTApi.client('getServices', { language: initLang })
-        ]);
-        cfg = result[0] || {};
-        services = (result[1] && (result[1].services || result[1].items)) || [];
-        cats = ['All'].concat((result[1] && result[1].categories) || []);
+        var result = await fetchClientData(initLang);
+        applyClientData(result);
         loadedLang = initLang;
         applyConfig();
         renderCats();
         renderServices();
         renderBeforeAfter();
         renderCart();
-        loadSecondary();
+        renderOffers();
+        renderReviews();
+        renderAvailabilitySummary();
+        renderPaymentHelp();
+        renderSpotlight();
+        startSpotlight();
+        if(initLang !== currentLang) queueLanguageReload();
         checkPublicQrFromUrl();
       } catch(error) {
         toast(error.message || String(error));
-        $('servicesGrid').innerHTML = '<div class="empty">API URL no configurada o no disponible.</div>';
+        $('servicesGrid').innerHTML = '<div class="empty">' + RTApi.esc(currentLang === 'fr' ? 'Impossible de charger les services.' : 'No se pudieron cargar los servicios.') + ' <button class="btn secondary" type="button" onclick="init()">' + (currentLang === 'fr' ? 'Réessayer' : 'Reintentar') + '</button></div>';
       } finally {
         if(window.RTIntro) RTIntro.hide(220);
       }
+    }
+
+    async function fetchClientData(language){
+      try { return await RTApi.client('getClientData', { language:language }); }
+      catch(error){
+        if(!/unknown client action|acción desconocida|action inconnue/i.test(error.message || '')) throw error;
+        var parts = await Promise.all([
+          RTApi.client('getSalonConfig', { language:language }), RTApi.client('getServices', { language:language }),
+          RTApi.client('getPromotions', { language:language }), RTApi.client('getReviews', { language:language }),
+          RTApi.client('getPaymentsConfig', { language:language }), RTApi.client('getAvailability', {})
+        ]);
+        return { config:parts[0], services:parts[1], promotions:parts[2], reviews:parts[3], payments:parts[4], availability:parts[5] };
+      }
+    }
+    function applyClientData(result){
+      cfg = result.config || {};
+      services = (result.services && (result.services.services || result.services.items)) || [];
+      cats = ['All'].concat((result.services && result.services.categories) || []);
+      promos = normalizePromos(result.promotions);
+      reviews = result.reviews || [];
+      payments = normalizePaymentConfig(result.payments || { enabled:'No', cashEnabled:'No' });
+      availability = result.availability || { hours:[], blocks:[] };
+      supportsClientPost = !!(result.capabilities && result.capabilities.postBridge && RTApi.postClient);
+      Object.keys(cart).forEach(function(id){ if(!services.some(function(item){ return String(item.id) === id; })) delete cart[id]; });
+    }
+    function clientMutation(action, request){
+      return supportsClientPost ? RTApi.postClient(action, request) : RTApi.client(action, request);
     }
 
     function queueLanguageReload(){
@@ -363,24 +396,16 @@
       languageReloadTimer = null;
       var targetLang = currentLang;
       try {
-        var result = await Promise.all([
-          RTApi.client('getSalonConfig', { language: targetLang }),
-          RTApi.client('getServices', { language: targetLang }),
-          RTApi.client('getPromotions', { language: targetLang }).catch(function(){ return []; }),
-          RTApi.client('getPaymentsConfig', { language: targetLang }).catch(function(){ return payments || {}; })
-        ]);
+        var result = await fetchClientData(targetLang);
         if(targetLang !== currentLang){ queueLanguageReload(); return; }
-        cfg = result[0] || cfg;
-        services = (result[1] && (result[1].services || result[1].items)) || [];
-        cats = ['All'].concat((result[1] && result[1].categories) || []);
-        promos = normalizePromos(result[2]);
-        payments = normalizePaymentConfig(result[3] || payments || { enabled:'No' });
+        applyClientData(result);
         loadedLang = targetLang;
         applyConfig();
         renderCats();
         renderServices();
         renderBeforeAfter();
         renderOffers();
+        renderReviews();
         renderCart();
         renderPaymentHelp();
         renderSpotlight();
@@ -388,26 +413,6 @@
       } catch(error) {
         toast(error.message || String(error));
       }
-    }
-
-    function loadSecondary(){
-      Promise.all([
-        RTApi.client('getPromotions', { language: currentLang }).catch(function(){ return []; }),
-        RTApi.client('getReviews', { language: currentLang }).catch(function(){ return []; }),
-        RTApi.client('getPaymentsConfig', { language: currentLang }).catch(function(){ return {}; }),
-        RTApi.client('getAvailability', {}).catch(function(){ return { hours: [], blocks: [] }; })
-      ]).then(function(result){
-        promos = normalizePromos(result[0]);
-        reviews = result[1] || [];
-        payments = normalizePaymentConfig(result[2] || { enabled: 'No' });
-        availability = result[3] || { hours: [], blocks: [] };
-        renderOffers();
-        renderReviews();
-        renderAvailabilitySummary();
-        renderPaymentHelp();
-        renderSpotlight();
-        startSpotlight();
-      });
     }
 
     function applyConfig(){
@@ -506,12 +511,12 @@
     function syncPaymentOptions(){
       var select = $('payMethod');
       if(!select) return;
-      var labels = currentLang === 'fr'
-        ? ['Interac e-Transfer', 'Paiement en personne']
-        : ['Interac e-Transfer', 'Pago en persona'];
-      Array.prototype.forEach.call(select.options, function(option, index){
-        if(labels[index]) option.textContent = labels[index];
-      });
+      var previous = select.value;
+      var options = [];
+      if(/^(yes|si|sí|oui|true|1)$/i.test(String(payments.enabled || ''))) options.push('<option value="Interac e-Transfer">Interac e-Transfer</option>');
+      if(/^(yes|si|sí|oui|true|1)$/i.test(String(payments.cashEnabled || ''))) options.push('<option value="Cash">' + (currentLang === 'fr' ? 'Paiement en personne' : 'Pago en persona') + '</option>');
+      select.innerHTML = options.join('') || '<option value="">' + (currentLang === 'fr' ? 'Aucun paiement disponible' : 'Sin métodos de pago disponibles') + '</option>';
+      if(Array.prototype.some.call(select.options, function(option){ return option.value === previous; })) select.value = previous;
     }
     function isLegacyPaymentText(value){
       var text = String(value || '').toLowerCase();
@@ -535,6 +540,7 @@
     function renderPaymentHelp(){
       if(!$('paymentHelp')) return;
       payments = normalizePaymentConfig(payments);
+      syncPaymentOptions();
       var method = $('payMethod') ? $('payMethod').value : '';
       var text = payments.redirectMessage || t('interacHelp');
       var isCash = String(method).toLowerCase().indexOf('cash') !== -1;
@@ -706,15 +712,14 @@
     }
 
     function addService(id){
-      cart[id] = (cart[id] || 0) + 1;
+      cart[id] = Math.min(20, (cart[id] || 0) + 1);
       renderCart();
       renderServices();
-      loadAvailableTimes();
       $('cartFab').classList.add('has-items');
       toast(t('added'));
     }
     function qty(id, delta){
-      cart[id] = (cart[id] || 0) + delta;
+      cart[id] = Math.min(20, (cart[id] || 0) + delta);
       if(cart[id] <= 0) delete cart[id];
       renderCart();
       renderServices();
@@ -733,7 +738,7 @@
       var taxable = Math.max(0, subtotal - discount);
       var tax = 0;
       var travelFee = Number(cfg.travelFee || 0);
-      var tip = Number($('tip') ? $('tip').value : 0) || 0;
+      var tip = Math.max(0, Number($('tip') ? $('tip').value : 0) || 0);
       return { rows: rows, subtotal: subtotal, discount: discount, tax: tax, travelFee: travelFee, tip: tip, total: taxable + tax + travelFee + tip };
     }
     function renderCart(){
@@ -751,24 +756,32 @@
       totalLines += '<div class="total-line grand"><span>' + t('total') + '</span><strong>' + RTApi.money(totals.total) + '</strong></div>';
       $('totals').innerHTML = totalLines;
       updateSelectedTimeLabel();
-      if($('preferredDate') && $('preferredDate').value) loadAvailableTimes();
+      loadAvailableTimes();
     }
-    async function loadAvailableTimes(){
+    function loadAvailableTimes(force){
       var box = $('timeSlots');
       if(!box) return;
-      if(timeSlotsLoading) return;
       var date = $('preferredDate') ? $('preferredDate').value : '';
       var items = payload();
+      var key = JSON.stringify([date, items, currentLang]);
+      if(force !== true && key === slotsRequestKey) return;
+      slotsRequestKey = key;
+      var sequence = ++slotsRequestSequence;
+      if(slotsTimer) clearTimeout(slotsTimer);
+      var previousTime = $('preferredTime').value;
+      $('preferredTime').value = '';
+      updateSelectedTimeLabel();
       if(!date || !items.length){
+        timeSlotsLoading = false;
         box.innerHTML = '<span class="slot-help">' + t('chooseDateServices') + '</span>';
-        if($('preferredTime')) $('preferredTime').value = '';
-        updateSelectedTimeLabel();
         return;
       }
       timeSlotsLoading = true;
       box.innerHTML = '<span class="slot-help">' + t('loadingTimes') + '</span>';
+      slotsTimer = setTimeout(async function(){
       try {
         var result = await RTApi.client('getAvailableTimes', { date: date, items: items, language: currentLang });
+        if(sequence !== slotsRequestSequence) return;
         var times = (result && result.times) || [];
         if(!times.length){
           var reason = result && result.reason === 'closed' && result.hours
@@ -779,6 +792,7 @@
           updateSelectedTimeLabel();
           return;
         }
+        if(times.some(function(time){ return sameTime(previousTime, time); })) $('preferredTime').value = previousTime;
         box.innerHTML = times.map(function(time){
           var display = formatTime12(time);
           var active = sameTime($('preferredTime').value, time) ? 'active' : '';
@@ -786,10 +800,13 @@
         }).join('');
         updateSelectedTimeLabel();
       } catch(error) {
-        box.innerHTML = '<span class="slot-help">' + RTApi.esc(error.message || String(error)) + '</span>';
+        if(sequence !== slotsRequestSequence) return;
+        slotsRequestKey = '';
+        box.innerHTML = '<span class="slot-help">' + RTApi.esc(error.message || String(error)) + '</span><button class="btn secondary" type="button" onclick="loadAvailableTimes(true)">' + (currentLang === 'fr' ? 'Réessayer' : 'Reintentar') + '</button>';
       } finally {
-        timeSlotsLoading = false;
+        if(sequence === slotsRequestSequence) timeSlotsLoading = false;
       }
+      }, 200);
     }
     function selectTimeSlot(time){
       var display = formatTime12(time);
@@ -801,13 +818,14 @@
     function closeCart(){ $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true'); }
 
     async function submitReview(){
+      if($('reviewBtn').disabled) return;
       var name = $('reviewName').value.trim();
       var text = $('reviewText').value.trim();
       if(!name) return toast(t('name') + ' requerido');
       if(text.length < 8) return toast('Min 8 caracteres');
       $('reviewBtn').disabled = true;
       try {
-        var result = await RTApi.client('submitReview', { name:name, text:text, rating:$('reviewRating').value, language:currentLang });
+        var result = await clientMutation('submitReview', { name:name, text:text, rating:$('reviewRating').value, language:currentLang });
         $('reviewName').value = '';
         $('reviewText').value = '';
         toast((result && result.message) || t('reviewThanks'));
@@ -816,10 +834,17 @@
     }
 
     async function placeAppointment(){
+      if($('placeBtn').disabled) return;
+      if(timeSlotsLoading) return toast(t('loadingTimes'));
       if(!payload().length) return toast(t('requiredCart'));
+      if(!$('cName').value.trim()) return toast(currentLang === 'fr' ? 'Entrez votre nom.' : 'Escribe tu nombre.');
+      if($('cPhone').value.replace(/\D/g, '').length < 7) return toast(currentLang === 'fr' ? 'Entrez un téléphone valide.' : 'Escribe un teléfono válido.');
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('cEmail').value.trim())) return toast(currentLang === 'fr' ? 'Entrez un courriel valide.' : 'Escribe un correo válido.');
       if(!$('preferredDate').value || !$('preferredTime').value) return toast(t('requiredDate'));
       if(!$('cAddress').value.trim()) return toast(t('requiredAddress'));
       if(!$('agree').checked) return toast(t('requiredAgreement'));
+      if(!$('payMethod').value) return toast(currentLang === 'fr' ? 'Contactez-nous pour réserver.' : 'Contáctanos para reservar.');
+      if(!Number.isFinite(Number($('tip').value || 0)) || Number($('tip').value || 0) < 0) return toast(currentLang === 'fr' ? 'Vérifiez le pourboire.' : 'Revisa la propina.');
       var request = {
         language: currentLang,
         customerName: $('cName').value,
@@ -836,15 +861,25 @@
         items: payload(),
         userAgent: navigator.userAgent
       };
+      var fingerprint = JSON.stringify(request);
+      if(!pendingBooking || pendingBooking.fingerprint !== fingerprint) pendingBooking = { fingerprint:fingerprint, id:window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2) };
+      request.requestId = pendingBooking.id;
       $('placeBtn').disabled = true;
       $('loadingModal').classList.add('open');
       try {
-        var result = await RTApi.client('createAppointment', request);
+        var result = await clientMutation('createAppointment', request);
+        pendingBooking = null;
         cart = {};
         renderCart();
         closeCart();
         renderReceipt(result.appointment, result.payments || payments);
-      } catch(error) { toast(error.message || String(error)); }
+      } catch(error) {
+        var bookingError = error.message || String(error);
+        toast(bookingError);
+        // Keep the same request key/time after an uncertain network response.
+        // A manual retry can retrieve the saved receipt without a second booking.
+        if(/horario|créneau|rendez-vous a cette heure|fuera del horario|heure.*bloqu/i.test(bookingError)) loadAvailableTimes(true);
+      }
       finally {
         $('loadingModal').classList.remove('open');
         $('placeBtn').disabled = false;

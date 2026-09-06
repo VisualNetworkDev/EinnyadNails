@@ -26,7 +26,19 @@ window.EINNYAD_SYSTEM = {
     return baseUrl + (baseUrl.indexOf('?') === -1 ? '?' : '&') + query;
   }
 
+  var readActions = new Set(['health', 'getClientData', 'getSalonConfig', 'getConfig', 'getServices', 'getPromotions', 'getReviews', 'getTestimonials', 'getPaymentsConfig', 'getAvailability', 'getAvailableSlots', 'getAvailableTimes', 'validatePromotion', 'getAppointmentReceipt', 'getAppointmentByQr', 'getAdminData', 'getDashboard', 'getAppointments', 'getPhotoStorage', 'getLogs', 'verifyAppointmentQr', 'getNotificationData']);
+  var inFlightReads = new Map();
   function jsonp(baseUrl, action, payload){
+    var key = baseUrl + '|' + action + '|' + JSON.stringify(payload || {});
+    if(readActions.has(action) && inFlightReads.has(key)) return inFlightReads.get(key);
+    var request = jsonpRequest(baseUrl, action, payload);
+    if(readActions.has(action)){
+      inFlightReads.set(key, request);
+      request.then(function(){ inFlightReads.delete(key); }, function(){ inFlightReads.delete(key); });
+    }
+    return request;
+  }
+  function jsonpRequest(baseUrl, action, payload){
     payload = payload || {};
     var attempts = 0;
     return new Promise(function(resolve, reject){
@@ -53,7 +65,7 @@ window.EINNYAD_SYSTEM = {
         }
 
         function retryOrReject(error){
-          if(attempts < 2) {
+          if(readActions.has(action) && attempts < 2) {
             setTimeout(start, 900);
             return;
           }
@@ -83,9 +95,47 @@ window.EINNYAD_SYSTEM = {
     });
   }
 
+  // Apps Script HTML bridge keeps passwords, tokens and mutation payloads out of URLs.
+  // A timed-out write is never automatically replayed: it may already have completed.
+  function postBridge(baseUrl, marker, action, payload){
+    return new Promise(function(resolve, reject){
+      var requestId = 'en_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      var frame = document.createElement('iframe');
+      frame.name = 'bridge_' + requestId;
+      frame.hidden = true;
+      var form = document.createElement('form');
+      form.method = 'POST'; form.action = baseUrl; form.target = frame.name; form.hidden = true;
+      var fields = {bridge:'1', requestId:requestId, action:action, payload:JSON.stringify(payload || {})};
+      Object.keys(fields).forEach(function(key){
+        var input = document.createElement('input');
+        input.type = 'hidden'; input.name = key; input.value = fields[key]; form.appendChild(input);
+      });
+      var timer = setTimeout(function(){
+        cleanup(); reject(new Error('No se recibió confirmación. Actualiza los datos antes de repetir la operación.'));
+      }, action === 'uploadImage' ? 130000 : (window.EINNYAD_SYSTEM.apiTimeoutMs || 60000));
+      function cleanup(){ clearTimeout(timer); window.removeEventListener('message', onMessage); form.remove(); frame.remove(); }
+      function onMessage(event){
+        var host;
+        try { var origin = new URL(event.origin); if(origin.protocol !== 'https:') return; host = origin.hostname; } catch(_) { return; }
+        if(host !== 'script.google.com' && host !== 'script.googleusercontent.com' && !host.endsWith('.script.googleusercontent.com') && !host.endsWith('-script.googleusercontent.com')) return;
+        var response = event.data;
+        if(typeof response === 'string') { try { response = JSON.parse(response); } catch(_) { return; } }
+        if(!response || response[marker] !== true || response.requestId !== requestId) return;
+        cleanup();
+        if(response.success === true) resolve(response.data || {});
+        else reject(new Error(response.message || 'No se pudo completar la operación.'));
+      }
+      window.addEventListener('message', onMessage);
+      document.body.appendChild(frame); document.body.appendChild(form); form.submit();
+    });
+  }
+
   window.RTApi = {
   client: function(action, payload){ return jsonp(window.EINNYAD_SYSTEM.clientApiUrl, action, payload); },
   admin: function(action, payload){ return jsonp(window.EINNYAD_SYSTEM.adminApiUrl, action, payload); },
+    postAdmin: function(action, payload){ return postBridge(window.EINNYAD_SYSTEM.adminApiUrl, 'einnyadAdminApi', action, payload); },
+    postClient: function(action, payload){ return postBridge(window.EINNYAD_SYSTEM.clientApiUrl, 'einnyadClientApi', action, payload); },
+    isReadAction: function(action){ return readActions.has(action); },
     money: function(value){ return '$' + Number(value || 0).toFixed(2) + ' CAD'; },
     esc: function(value){
       return String(value == null ? '' : value).replace(/[&<>"']/g, function(character){
