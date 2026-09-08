@@ -46,6 +46,7 @@
         <button class="active" data-panel="dashboard" onclick="showPanel('dashboard', this)">Dashboard</button>
         <button data-panel="appointments" onclick="showPanel('appointments', this)">Ordenes</button>
         <button data-panel="services" onclick="showPanel('services', this)">Servicios</button>
+        <button data-panel="promotions" onclick="showPanel('promotions', this)">Promociones</button>
         <button data-panel="qr" onclick="showPanel('qr', this)">QR</button>
         <button data-panel="reviews" onclick="showPanel('reviews', this)">Testimonios</button>
         <button data-panel="settings" onclick="showPanel('settings', this)">Ajustes</button>
@@ -222,9 +223,36 @@
         <div id="reviewsList" class="grid grid-2"></div>
       </section>
 
+      <section id="panel-promotions" class="panel section">
+        <div class="section-head">
+          <div><h2 class="section-title">Promociones</h2><p class="section-sub">Crea, edita, activa, desactiva o borra ofertas desde una sección independiente.</p></div>
+          <button class="btn" type="button" onclick="newPromo()">Nueva promoción</button>
+        </div>
+        <div class="grid grid-2">
+          <form id="promoForm" class="card" onsubmit="savePromo(event)">
+            <div class="section-head compact"><div><h2 id="promoFormTitle">Nueva promoción</h2><p class="section-sub">Configura el código y sus reglas.</p></div><button class="btn secondary" type="button" onclick="newPromo()">Limpiar</button></div>
+            <label class="field"><span>Código</span><input id="promoCode" maxlength="40" pattern="[A-Za-z0-9_-]{2,40}" required></label>
+            <label class="field"><span>Título ES</span><input id="promoTitle" required></label>
+            <label class="field"><span>Título FR-CA</span><input id="promoTitleFr"></label>
+            <label class="field"><span>Descripción ES</span><textarea id="promoDescription"></textarea></label>
+            <label class="field"><span>Descripción FR-CA</span><textarea id="promoDescriptionFr"></textarea></label>
+            <div class="split"><label class="field"><span>Tipo</span><select id="promoType"><option value="percent">Porcentaje</option><option value="fixed">Monto fijo</option></select></label><label class="field"><span>Valor</span><input id="promoValue" type="number" min="0" step="0.01" required></label></div>
+            <div class="split"><label class="field"><span>Subtotal mínimo</span><input id="promoMinSubtotal" type="number" min="0" step="0.01"></label><label class="field"><span>Activo</span><select id="promoActive"><option value="Yes">Sí</option><option value="No">No</option></select></label></div>
+            <label class="field"><span>Uso único de bienvenida</span><select id="promoWelcomeOnly" onchange="renderPromoWelcomeHelp()"><option value="No">No, se puede reutilizar</option><option value="Yes">Sí, solo primera reserva</option></select></label>
+            <p id="promoWelcomeHelp" class="payment-help" hidden>Se compara el correo y el teléfono. Si la clienta ya tiene una reserva, esta promoción será rechazada; otras promociones válidas seguirán funcionando.</p>
+            <div class="split"><label class="field"><span>Válida desde</span><input id="promoStartDate" type="date"></label><label class="field"><span>Válida hasta</span><input id="promoEndDate" type="date"></label></div>
+            <button class="btn full" type="submit">Guardar promoción</button>
+          </form>
+          <div class="card">
+            <h2>Promociones creadas</h2>
+            <div id="promosList" class="grid"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="panel-settings" class="panel section">
         <div class="section-head">
-          <div><h2 class="section-title">Ajustes</h2><p class="section-sub">Configuracion de la duena, pagos, disponibilidad, promociones y registros del sistema.</p></div>
+          <div><h2 class="section-title">Ajustes</h2><p class="section-sub">Configuración de la dueña, pagos, disponibilidad y registros del sistema.</p></div>
         </div>
         <div class="settings-grid">
           <form id="settingsForm" class="card" oninput="adminDrafts.settings++" onchange="adminDrafts.settings++" onsubmit="saveSettings(event)">
@@ -274,21 +302,6 @@
           <div class="card">
             <h2>Bloqueos activos</h2>
             <div id="blocksList" class="grid"></div>
-          </div>
-          <form class="card" onsubmit="savePromo(event)">
-            <h2>Promocion</h2>
-            <label class="field"><span>Codigo</span><input id="promoCode" required></label>
-            <label class="field"><span>Titulo ES</span><input id="promoTitle"></label>
-            <label class="field"><span>Titulo FR-CA</span><input id="promoTitleFr"></label>
-            <label class="field"><span>Descripcion ES</span><textarea id="promoDescription"></textarea></label>
-            <label class="field"><span>Descripcion FR-CA</span><textarea id="promoDescriptionFr"></textarea></label>
-            <div class="split"><label class="field"><span>Tipo</span><select id="promoType"><option>percent</option><option>fixed</option></select></label><label class="field"><span>Valor</span><input id="promoValue" type="number" step="0.01"></label></div>
-            <div class="split"><label class="field"><span>Min subtotal</span><input id="promoMinSubtotal" type="number" step="0.01"></label><label class="field"><span>Activo</span><select id="promoActive"><option>Yes</option><option>No</option></select></label></div>
-            <button class="btn full" type="submit">Guardar promo</button>
-          </form>
-          <div class="card">
-            <h2>Promos activas</h2>
-            <div id="promosList" class="grid"></div>
           </div>
           <div class="card settings-wide">
             <div class="section-head compact">
@@ -1299,15 +1312,109 @@
       finally { hideLoading(); }
     }
     function renderPromos(){
-      $('promosList').innerHTML = (adminData.promotions || []).map(function(promo){
-        return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code) + '</span><h3>' + RTApi.esc(promo.title) + '</h3><p class="section-sub">' + RTApi.esc(promo.description) + '</p><strong>' + RTApi.esc(promo.type) + ' ' + RTApi.esc(promo.value) + '</strong></div>';
+      $('promosList').innerHTML = (adminData.promotions || []).map(function(promo, index){
+        var active = /^(yes|si|sí|true|1)$/i.test(String(promo.active || ''));
+        var value = String(promo.type || '').toLowerCase() === 'fixed' ? RTApi.money(promo.value) : Number(promo.value || 0) + '%';
+        var dates = promo.startDate || promo.endDate ? (promo.startDate || 'Ahora') + ' — ' + (promo.endDate || 'Sin fecha final') : 'Sin límite de fechas';
+        return '<div class="card"><div class="toolbar"><span class="badge green">' + RTApi.esc(promo.code) + '</span><span class="badge ' + (active ? 'green' : 'dark') + '">' + (active ? 'Activa' : 'Inactiva') + '</span>' + (promo.welcomeOnly ? '<span class="badge dark">Una vez por clienta</span>' : '') + '</div><h3>' + RTApi.esc(promo.title || promo.code) + '</h3><p class="section-sub">' + RTApi.esc(promo.description || '') + '</p><p><strong>' + RTApi.esc(value) + '</strong><br><span class="section-sub">Mínimo ' + RTApi.money(promo.minSubtotal || 0) + '<br>' + RTApi.esc(dates) + '</span></p><div class="toolbar"><button class="btn secondary" type="button" onclick="editPromoByIndex(' + index + ')">Editar</button><button class="btn secondary" type="button" onclick="togglePromoByIndex(' + index + ')">' + (active ? 'Desactivar' : 'Activar') + '</button><button class="btn danger" type="button" onclick="deletePromoByIndex(' + index + ')">Borrar</button></div></div>';
       }).join('') || '<div class="empty">No hay promos.</div>';
+    }
+    function promoPayload(promo, active){
+      return { code:String(promo.code || '').trim().toUpperCase(), title:promo.title || '', titleFr:promo.titleFr || '', description:promo.description || '', descriptionFr:promo.descriptionFr || '', type:promo.type || 'percent', value:promo.value || 0, active:active || promo.active || 'Yes', minSubtotal:promo.minSubtotal || 0, startDate:promo.startDate || '', endDate:promo.endDate || '', welcomeOnly:promo.welcomeOnly ? 'Yes' : 'No' };
+    }
+    function newPromo(){
+      showPanel('promotions');
+      $('promoForm').reset();
+      $('promoCode').readOnly = false;
+      $('promoValue').value = '0';
+      $('promoMinSubtotal').value = '0';
+      $('promoWelcomeOnly').value = 'No';
+      $('promoFormTitle').textContent = 'Nueva promoción';
+      renderPromoWelcomeHelp();
+      $('promoCode').focus();
+    }
+    function editPromoByIndex(index){
+      var promo = (adminData.promotions || [])[index];
+      if(!promo) return toast('La promoción ya no está en la lista. Pulsa Actualizar.');
+      showPanel('promotions');
+      $('promoCode').value = promo.code || '';
+      $('promoCode').readOnly = true;
+      $('promoTitle').value = promo.title || '';
+      $('promoTitleFr').value = promo.titleFr || '';
+      $('promoDescription').value = promo.description || '';
+      $('promoDescriptionFr').value = promo.descriptionFr || '';
+      $('promoType').value = promo.type === 'fixed' ? 'fixed' : 'percent';
+      $('promoValue').value = promo.value || 0;
+      $('promoMinSubtotal').value = promo.minSubtotal || 0;
+      $('promoActive').value = /^(yes|si|sí|true|1)$/i.test(String(promo.active || '')) ? 'Yes' : 'No';
+      $('promoWelcomeOnly').value = promo.welcomeOnly ? 'Yes' : 'No';
+      $('promoStartDate').value = promo.startDate || '';
+      $('promoEndDate').value = promo.endDate || '';
+      $('promoFormTitle').textContent = 'Editar ' + (promo.code || 'promoción');
+      renderPromoWelcomeHelp();
+      $('promoForm').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    function renderPromoWelcomeHelp(){
+      $('promoWelcomeHelp').hidden = $('promoWelcomeOnly').value !== 'Yes';
+    }
+    async function reloadPromotionsStrict(){
+      var refreshed = await adminCall('getAdminData', {});
+      adminData = refreshed;
+      renderAll();
+      return adminData.promotions || [];
+    }
+    function promotionMatches(expected, actual){
+      if(!actual) return false;
+      var textFields = ['code','title','titleFr','description','descriptionFr','type','active','startDate','endDate'];
+      for(var i=0;i<textFields.length;i++) if(String(expected[textFields[i]] || '').trim().toLowerCase() !== String(actual[textFields[i]] || '').trim().toLowerCase()) return false;
+      if(Math.abs(Number(expected.value || 0) - Number(actual.value || 0)) > 0.001) return false;
+      if(Math.abs(Number(expected.minSubtotal || 0) - Number(actual.minSubtotal || 0)) > 0.001) return false;
+      return (String(expected.welcomeOnly).toLowerCase() === 'yes') === !!actual.welcomeOnly;
     }
     async function savePromo(event){
       event.preventDefault();
-      var promotion = { code:$('promoCode').value, title:$('promoTitle').value, titleFr:$('promoTitleFr').value, description:$('promoDescription').value, descriptionFr:$('promoDescriptionFr').value, type:$('promoType').value, value:$('promoValue').value, active:$('promoActive').value, minSubtotal:$('promoMinSubtotal').value };
-      try { await adminCall('savePromotion', { promotion:promotion }); event.target.reset(); await refreshAll(); }
-      catch(error){ toast(error.message || String(error)); }
+      var promotion = { code:$('promoCode').value.trim().toUpperCase(), title:$('promoTitle').value, titleFr:$('promoTitleFr').value, description:$('promoDescription').value, descriptionFr:$('promoDescriptionFr').value, type:$('promoType').value, value:$('promoValue').value, active:$('promoActive').value, minSubtotal:$('promoMinSubtotal').value, startDate:$('promoStartDate').value, endDate:$('promoEndDate').value, welcomeOnly:$('promoWelcomeOnly').value };
+      if(promotion.startDate && promotion.endDate && promotion.startDate > promotion.endDate) return toast('La fecha final no puede ser anterior a la inicial.');
+      showLoading('Guardando y verificando promoción...');
+      try {
+        await adminCall('savePromotion', { promotion:promotion });
+        var promos = await reloadPromotionsStrict();
+        var actual = promos.find(function(item){ return String(item.code || '').toUpperCase() === promotion.code; });
+        if(!promotionMatches(promotion, actual)) throw new Error('El servidor respondió, pero no confirmó todos los cambios al volver a leerlos. No repitas el cambio; pulsa Actualizar y revisa.');
+        newPromo();
+        toast('Promoción guardada y confirmada');
+      } catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    async function togglePromoByIndex(index){
+      var promo = (adminData.promotions || [])[index];
+      if(!promo) return toast('La promoción ya no está en la lista.');
+      var next = /^(yes|si|sí|true|1)$/i.test(String(promo.active || '')) ? 'No' : 'Yes';
+      var expected = promoPayload(promo, next);
+      showLoading('Actualizando promoción...');
+      try {
+        await adminCall('savePromotion', {promotion:expected});
+        var promos = await reloadPromotionsStrict();
+        var actual = promos.find(function(item){ return String(item.code || '').toUpperCase() === expected.code; });
+        if(!promotionMatches(expected, actual)) throw new Error('El servidor no confirmó el nuevo estado de la promoción.');
+        toast(next === 'Yes' ? 'Promoción activada' : 'Promoción desactivada');
+      } catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
+    }
+    async function deletePromoByIndex(index){
+      var promo = (adminData.promotions || [])[index];
+      if(!promo) return toast('La promoción ya no está en la lista.');
+      var ok = await confirmAction('Borrar promoción', 'Se borrará ' + promo.code + '. Las citas existentes conservarán sus totales.');
+      if(!ok) return;
+      showLoading('Borrando y verificando promoción...');
+      try {
+        await adminCall('deletePromotion', {code:promo.code});
+        var promos = await reloadPromotionsStrict();
+        if(promos.some(function(item){ return String(item.code || '').toUpperCase() === String(promo.code || '').toUpperCase(); })) throw new Error('El servidor respondió, pero la promoción todavía existe al volver a leerla.');
+        newPromo();
+        toast('Promoción borrada y confirmada');
+      } catch(error){ toast(error.message || String(error)); }
+      finally { hideLoading(); }
     }
     function renderReviews(){
       $('reviewsList').innerHTML = (adminData.reviews || []).map(function(review){

@@ -670,7 +670,8 @@
     };
     function renderOffers(){
       $('offers').innerHTML = promos.map(function(promo){
-        return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code || '') + '</span><h3>' + RTApi.esc(promo.title || '') + '</h3><p class="section-sub">' + RTApi.esc(promo.description || '') + '</p></div>';
+        var firstBooking = promo.welcomeOnly ? '<span class="badge dark" style="margin-left:8px;">' + (currentLang === 'fr' ? 'Première réservation seulement' : 'Solo primera reserva') + '</span>' : '';
+        return '<div class="card"><span class="badge green">' + RTApi.esc(promo.code || '') + '</span>' + firstBooking + '<h3>' + RTApi.esc(promo.title || '') + '</h3><p class="section-sub">' + RTApi.esc(promo.description || '') + '</p></div>';
       }).join('') || '<div class="empty">' + t('noPromos') + '</div>';
     }
     function renderReviews(){
